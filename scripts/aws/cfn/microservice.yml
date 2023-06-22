@@ -130,6 +130,11 @@ Parameters:
   LegalConservationUpdateKinesisStreamKeyArn:
     Type: String
 
+  ConfinfoEventBusArn:
+    Type: String
+
+  EventBusDeadLetterQueueArn:
+    Type: String
 Resources:
   #########################################################
   ###             SafeStorageListener Lambda            ###
@@ -470,6 +475,68 @@ Resources:
       Action: lambda:InvokeFunction
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${PnCoreAwsAccountId}:*/*/*/'
+
+  # Allow event bus rules to write to queues
+  EventBusEnqueueRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: events.amazonaws.com
+        Version: "2012-10-17"
+      Policies:
+        - PolicyName: putEventIntoQueues
+          PolicyDocument:
+            Statement:
+              - Sid: putEvents
+                Action:
+                  - sqs:ChangeMessageVisibility
+                  - sqs:ChangeMessageVisibilityBatch
+                  - sqs:GetQueueAttributes
+                  - sqs:GetQueueUrl
+                  - sqs:SendMessage
+                  - sqs:SendMessageBatch
+                Effect: Allow
+                Resource: 
+                  - !Ref SafeStorageListenerQueueARN
+
+  # Send Safe Storage Response to sqs
+  PnCoreEventBusToSafeStorageResponseQueue:
+    Type: AWS::Events::Rule
+    Properties: 
+      Description: Route SafeStorage Events to pn-cn
+      RoleArn: !GetAtt "EventBusEnqueueRole.Arn"
+      EventBusName: !Ref ConfinfoEventBusArn
+      EventPattern:
+        detail-type: [ "SafeStorageOutcomeEvent" ]
+        detail:
+          documentType: [ 'LEGAL_FACTS', 'DOWNTIME_LEGAL_FACTS', 'PN_EXTERNAL_LEGAL_FACTS', 'PN_LOGS_ARCHIVE_AUDIT5Y', 'PN_LOGS_ARCHIVE_AUDIT10Y' ]
+      Targets: 
+        - Id: !Sub '${ProjectName}-ConfinfoEventbus-SafeStore2LegalConservation'
+          Arn: !Ref SafeStorageListenerQueueARN
+          InputPath: $.detail
+          DeadLetterConfig: 
+            Arn: !Ref EventBusDeadLetterQueueArn
+
+  SafeStorageListenerQueuePolicy:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      Queues:
+        - !Ref SafeStorageListenerQueueURL
+      PolicyDocument:
+        Statement:
+          - Sid: "SendEventsToDLQ"
+            Effect: "Allow"
+            Principal: 
+              Service: 
+                - "events.amazonaws.com"
+            Action: 
+              - "SQS:SendMessage"
+            Resource:
+              - !Ref SafeStorageListenerQueueARN
 
   # Dashboard
   MicroserviceDashboard:
