@@ -35,6 +35,22 @@ Parameters:
     Type: String
     AllowedValues: [ON_DEMAND, PROVISIONED]
 
+  SafeStorageEventreamRetentionHours:
+    Type: Number
+    Description: Kinesis Data Stream retention period in hours"
+    Default: "365"
+
+  SafeStorageEventStreamShardCount:
+    Type: Number
+    Default: "0"
+
+  SafeStorageEventStreamMode:
+    Description: Stream Mode.
+    Default: ON_DEMAND
+    Type: String
+    AllowedValues: [ON_DEMAND, PROVISIONED]
+
+
   LegalConservationEventUpdateStreamRetentionHours:
     Type: Number
     Description: Kinesis Data Stream retention period in hours"
@@ -62,6 +78,27 @@ Resources:
   ## KINESIS SOURCE STREAM FOR Change Data Capture
   ### AWS KMS / Server-side encryption for Kinesis Stream 
   CdcLegalConservationKinesisServerSideEncryptionKey:
+    Type: AWS::KMS::Key
+    Properties:
+      KeyPolicy:
+        Statement:
+          - Action: kms:*
+            Effect: Allow
+            Principal:
+              AWS:
+                Fn::Join:
+                  - ""
+                  - - "arn:"
+                    - Ref: AWS::Partition
+                    - ":iam::"
+                    - Ref: AWS::AccountId
+                    - :root
+            Resource: "*"
+        Version: "2012-10-17"
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+
+  SafeStorageEventKinesisServerSideEncryptionKey:
     Type: AWS::KMS::Key
     Properties:
       KeyPolicy:
@@ -138,6 +175,23 @@ Resources:
       StreamModeDetails:
         StreamMode: !Ref LegalConservationEventUpdateStreamMode   
 
+  SafeStorageEventKinesisStream:
+    Type: AWS::Kinesis::Stream
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      Name: !Sub "${ProjectName}-safe-storage-event-stream"
+      RetentionPeriodHours: !Ref SafeStorageEventreamRetentionHours
+      ShardCount: !Ref SafeStorageEventStreamShardCount
+      StreamEncryption:
+        EncryptionType: KMS
+        KeyId:
+          Fn::GetAtt:
+            - SafeStorageEventKinesisServerSideEncryptionKey
+            - Arn
+      StreamModeDetails:
+        StreamMode: !Ref SafeStorageEventStreamMode  
+
   LegalConservationRequestTable:
     Type: AWS::DynamoDB::Table
     UpdateReplacePolicy: Retain
@@ -146,14 +200,14 @@ Resources:
       TableName: !Sub "${ProjectName}-legal-conservation-request"
       AttributeDefinitions:
         # primary key
-        - AttributeName: "entityName_documentType" # entity type (req or sla violation) concatenated to document type
+        - AttributeName: "pk" # entity type (req or sla violation) concatenated to document type
           AttributeType: "S"
-        - AttributeName: "id" # string concatenation based on step type
+        - AttributeName: "sk" # string concatenation based on step type
           AttributeType: "S"
       KeySchema:
-        - AttributeName: "entityName_documentType"
+        - AttributeName: "pk"
           KeyType: "HASH"
-        - AttributeName: "id"
+        - AttributeName: "sk"
           KeyType: "RANGE"
       BillingMode: "PAY_PER_REQUEST"
       TimeToLiveSpecification:
@@ -167,17 +221,6 @@ Resources:
         StreamViewType: NEW_IMAGE
 
   # SQS Queue
-  SafeStorageListenerQueue:
-    Type: AWS::CloudFormation::Stack
-    UpdateReplacePolicy: Retain
-    DeletionPolicy: Retain 
-    Properties:
-      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/sqs-queue.yaml"
-      Parameters:
-        QueueName: !Sub "${ProjectName}-cn-safe-storage-listener-queue"
-        DelaySeconds: 10
-        AlarmSNSTopicName: !Ref AlarmSNSTopicName
-
   SafeStorageListenerDLQ:
     Type: AWS::CloudFormation::Stack
     UpdateReplacePolicy: Retain
@@ -212,17 +255,6 @@ Resources:
       TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/log-group.yaml"
       Parameters:
         LogGroupName: !Sub "${ProjectName}-safeStorageListener"
-        LogGroupRetention: !Ref LogRetention
-        LogGroupPrefix: '/aws/lambda'
-
-  SafeStorageListenerLambdaSQSLogGroup:
-    Type: AWS::CloudFormation::Stack
-    UpdateReplacePolicy: Retain
-    DeletionPolicy: Retain    
-    Properties:
-      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/log-group.yaml"
-      Parameters:
-        LogGroupName: !Sub "${ProjectName}-safeStorageListener-SQS"
         LogGroupRetention: !Ref LogRetention
         LogGroupPrefix: '/aws/lambda'
 
@@ -277,26 +309,13 @@ Outputs:
 
   LegalConservationUpdateKinesisStreamArn:
     Value: !GetAtt LegalConservationUpdateKinesisStream.Arn
-
   LegalConservationUpdateKinesisStreamKeyArn:
     Value: !GetAtt LegalConservationEventUpdateKinesisServerSideEncryptionKey.Arn
 
-  # Scheduled Actions
-  SafeStorageListenerQueueName:
-    Value: !GetAtt SafeStorageListenerQueue.Outputs.QueueName
-    Description: queue name
-  SafeStorageListenerQueueURL:
-    Value: !GetAtt SafeStorageListenerQueue.Outputs.QueueURL
-    Description: queue URL
-  SafeStorageListenerQueueARN:
-    Value: !GetAtt SafeStorageListenerQueue.Outputs.QueueARN
-    Description: queue ARN
-  SafeStorageListenerQueueAlarmARN:
-    Value: !GetAtt SafeStorageListenerQueue.Outputs.SqsDLQAlarmArn
-    Description: queue dlq alarm queue
-  SafeStorageListenerQueueAgeAlarmARN:
-    Value: !GetAtt SafeStorageListenerQueue.Outputs.SqsAgeAlarmArn
-    Description: age alarm ARN
+  SafeStorageEventKinesisStreamArn:
+    Value: !GetAtt SafeStorageEventKinesisStream.Arn
+  SafeStorageEventKinesisStreamKeyArn:
+    Value: !GetAtt SafeStorageEventKinesisServerSideEncryptionKey.Arn
 
   LegalConservationTrackerDLQName:
     Value: !GetAtt LegalConservationTrackerDLQ.Outputs.QueueName
@@ -327,9 +346,6 @@ Outputs:
   # Lambda functions
   SafeStorageListenerLambdaName:
     Value: !Sub "${ProjectName}-safeStorageListener"
-
-  SafeStorageListenerLambdaSQSName:
-    Value: !Sub "${ProjectName}-safeStorageListener-SQS"
 
   PreSignedUrlGeneratorLambdaName:
     Value: !Sub "${ProjectName}-preSignedUrlGenerator"

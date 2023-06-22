@@ -54,6 +54,14 @@ Parameters:
     Description: "Kinesis source CDC stream crypto key ARN"
     Type: String
 
+  SafeStorageEventKinesisStreamArn:
+    Type: String
+    Description: "Safe Storage Event Kinesis Data Stream ARN"
+
+  SafeStorageEventKinesisStreamKeyArn:
+    Description: "Safe Storage Event Kinesis Data Stream crypto key ARN"
+    Type: String
+
   VpcId:
     Type: String
     Description: 'VpcId where the microservice is going to be deployed'
@@ -67,26 +75,7 @@ Parameters:
     Description: 'Base URL of the load balancer where the service is going to be reachable'
 
   # SQS
-  SafeStorageListenerQueueARN:
-    Description: "SQS queue ARN"
-    Type: String
-
-  SafeStorageListenerQueueURL:
-    Description: "SQS queue URL"
-    Type: String
-
-  SafeStorageListenerQueueAlarmARN:
-    Type: String
-    Description: SQS DLQ Alarm arn
-
-  SafeStorageListenerQueueAgeAlarmARN:
-    Type: String
-    Description: SQS Age Alarm arn
-
   SafeStorageListenerLambdaName:
-    Type: String
-
-  SafeStorageListenerLambdaSQSName:
     Type: String
 
   LegalConservationTrackerDLQARN:
@@ -165,30 +154,6 @@ Resources:
           SSM_PARAMETER_STORE_TIMEOUT_MILLIS: 5000
       Timeout: 180
 
-  SafeStorageListenerLambdaSQS:
-    Type: AWS::Lambda::Function
-    Properties:
-      FunctionName: !Ref SafeStorageListenerLambdaSQSName
-      Runtime: nodejs18.x
-      Handler: "index.handler"
-      Code:
-        S3Bucket: !Ref LambdasBucketName
-        S3Key: !Sub "${BucketBasePath}/safeStorageListener.zip"
-      Role: !GetAtt SafeStorageListenerLambdaRole.Arn
-      TracingConfig:
-        Mode: Active
-      Layers:
-        - !Sub "arn:aws:lambda:${AWS::Region}:339249233099:layer:LambdaInsightsExtension:13"
-        - !Sub "arn:aws:lambda:${AWS::Region}:325218067255:layer:AWS-Parameters-and-Secrets-Lambda-Extension:2" 
-      Environment:
-        Variables:
-          REGION: !Sub ${AWS::Region}
-          DYNAMODB_TABLE: !Sub "${LegalConservationRequestDynamoTableName}"
-          CONSERVATION_SERVICE_BASE_URL: !Ref ConservationServiceBaseUrl
-          SECRET_ARN: !Ref LegalConservationSecretArn
-          SSM_PARAMETER_STORE_TIMEOUT_MILLIS: 5000
-      Timeout: 180
-
   # Lambda function role
   SafeStorageListenerLambdaRole:
     Type: AWS::IAM::Role
@@ -243,10 +208,14 @@ Resources:
               - kinesis:ListShards
               - kinesis:ListStreams
               - kinesis:SubscribeToShard
-            Resource: !Ref CdcLegalConservationKinesisSourceStreamArn
+            Resource: 
+              - !Ref CdcLegalConservationKinesisSourceStreamArn
+              - !Ref SafeStorageEventKinesisStreamArn
           - Action: kms:Decrypt
             Effect: Allow
-            Resource: !Ref CdcLegalConservationKinesisSourceStreamKeyArn
+            Resource: 
+              - !Ref CdcLegalConservationKinesisSourceStreamKeyArn
+              - !Ref SafeStorageEventKinesisStreamKeyArn
           - Effect: Allow
             Action:
               - sqs:ReceiveMessage
@@ -255,17 +224,21 @@ Resources:
               - sqs:SendMessage
             Resource:
               - !Ref SafeStorageListenerDLQARN
-              - !Ref SafeStorageListenerQueueARN            
 
   SafeStorageListenerEventSourceMapping:
     Type: AWS::Lambda::EventSourceMapping
     Properties:
-      BatchSize: 10
-      Enabled: true
+      BatchSize: 20
+      BisectBatchOnFunctionError: true
+      EventSourceArn: !Ref SafeStorageEventKinesisStreamArn
+      FunctionName: !GetAtt SafeStorageListenerLambda.Arn
       FunctionResponseTypes:
         - ReportBatchItemFailures
-      EventSourceArn: !Ref SafeStorageListenerQueueARN
-      FunctionName: !GetAtt SafeStorageListenerLambdaSQS.Arn
+      MaximumBatchingWindowInSeconds: 300 # 1 minute
+      StartingPosition: TRIM_HORIZON
+      DestinationConfig:
+        OnFailure:
+          Destination: !Ref SafeStorageListenerDLQARN
 
   # CDC to SLA Violation Checker
   SafeStorageListenerLambdaKinesisSourceMapping:
@@ -290,14 +263,6 @@ Resources:
       Parameters:
         FunctionName: !Ref SafeStorageListenerLambda
         AlarmSNSTopicArn: !Ref AlarmSNSTopicArn
-
-  SafeStorageListenerLambdaSQSAlarms:
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/lambda-alarms.yaml"
-      Parameters:
-        FunctionName: !Ref SafeStorageListenerLambdaSQS
-        AlarmSNSTopicArn: !Ref AlarmSNSTopicArn        
 
   #########################################################
   ###            PreSignedUrlGeneratorLambda            ###
@@ -476,7 +441,7 @@ Resources:
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${PnCoreAwsAccountId}:*/*/*/'
 
-  # Allow event bus rules to write to queues
+  # Allow event bus rules to write to kinesis stream
   EventBusEnqueueRole:
     Type: AWS::IAM::Role
     Properties:
@@ -491,17 +456,11 @@ Resources:
         - PolicyName: putEventIntoQueues
           PolicyDocument:
             Statement:
-              - Sid: putEvents
+              - Sid: PutEvents
                 Action:
-                  - sqs:ChangeMessageVisibility
-                  - sqs:ChangeMessageVisibilityBatch
-                  - sqs:GetQueueAttributes
-                  - sqs:GetQueueUrl
-                  - sqs:SendMessage
-                  - sqs:SendMessageBatch
+                  - kinesis:PutRecords
                 Effect: Allow
-                Resource: 
-                  - !Ref SafeStorageListenerQueueARN
+                Resource: !Ref SafeStorageEventKinesisStreamArn  
 
   # Send Safe Storage Response to sqs
   PnCoreEventBusToSafeStorageResponseQueue:
@@ -516,27 +475,9 @@ Resources:
           documentType: [ 'LEGAL_FACTS', 'DOWNTIME_LEGAL_FACTS', 'PN_EXTERNAL_LEGAL_FACTS', 'PN_LOGS_ARCHIVE_AUDIT5Y', 'PN_LOGS_ARCHIVE_AUDIT10Y' ]
       Targets: 
         - Id: !Sub '${ProjectName}-ConfinfoEventbus-SafeStore2LegalConservation'
-          Arn: !Ref SafeStorageListenerQueueARN
-          InputPath: $.detail
+          Arn: !Ref SafeStorageEventKinesisStreamArn
           DeadLetterConfig: 
             Arn: !Ref EventBusDeadLetterQueueArn
-
-  SafeStorageListenerQueuePolicy:
-    Type: AWS::SQS::QueuePolicy
-    Properties:
-      Queues:
-        - !Ref SafeStorageListenerQueueURL
-      PolicyDocument:
-        Statement:
-          - Sid: "SendEventsToDLQ"
-            Effect: "Allow"
-            Principal: 
-              Service: 
-                - "events.amazonaws.com"
-            Action: 
-              - "SQS:SendMessage"
-            Resource:
-              - !Ref SafeStorageListenerQueueARN
 
   # Dashboard
   MicroserviceDashboard:
@@ -552,24 +493,16 @@ Resources:
           - ","
           - - !GetAtt PreSignedUrlGeneratorLambda.Arn
             - !GetAtt SafeStorageListenerLambda.Arn
-            - !GetAtt SafeStorageListenerLambdaSQS.Arn
             - !GetAtt EventUpdateReceiverLambda.Arn
-        QueueArns: !Join
-          - ","
-          - - !Ref SafeStorageListenerQueueARN
         AlarmArns: !Join
           - ","
           - - !GetAtt PreSignedUrlGeneratorLambdaAlarms.Outputs.LambdaInvocationErrorLogsMetricAlarm
             - !GetAtt SafeStorageListenerLambdaAlarms.Outputs.LambdaInvocationErrorLogsMetricAlarm
-            - !GetAtt SafeStorageListenerLambdaSQSAlarms.Outputs.LambdaInvocationErrorLogsMetricAlarm
             - !GetAtt EventUpdateReceiverLambdaAlarms.Outputs.LambdaInvocationErrorLogsMetricAlarm
-            - !Ref SafeStorageListenerQueueAlarmARN
-            - !Ref SafeStorageListenerQueueAgeAlarmARN
             - !Ref LegalConservationTrackerDLQAlarmARN
             - !Ref SafeStorageListenerDLQAlarmARN
         LogGroupsNames: !Join
           - ","
           - - !Sub /aws/lambda/${PreSignedUrlGeneratorLambda}
             - !Sub /aws/lambda/${SafeStorageListenerLambda}
-            - !Sub /aws/lambda/${SafeStorageListenerLambdaSQS}
             - !Sub /aws/lambda/${EventUpdateReceiverLambda}
