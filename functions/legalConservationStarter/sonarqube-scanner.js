@@ -1,6 +1,6 @@
 let options = {
     "sonar.organization": "pagopa",
-    "sonar.projectKey": "pagopa_pn-cn-safeStorageListener"
+    "sonar.projectKey": "pagopa_pn-cn-legalConservationStarter"
 }
 
 if (process.env.PR_NUM) {
