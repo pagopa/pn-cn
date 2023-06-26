@@ -472,8 +472,8 @@ Resources:
                 Effect: Allow
                 Resource: !Ref SafeStorageEventKinesisStreamKeyArn    
 
-  # Send Safe Storage Response to sqs
-  PnCoreEventBusToSafeStorageResponseQueue:
+  # Send Safe Storage Event to Kinesis stream
+  PnConfinfoEventBusToSafeStorageEventStream:
     Type: AWS::Events::Rule
     Properties: 
       Description: Route SafeStorage Events to pn-cn

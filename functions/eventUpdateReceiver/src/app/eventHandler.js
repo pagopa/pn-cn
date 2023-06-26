@@ -1,3 +1,3 @@
 exports.handleEvent = async (event) => {
- return {}
+    throw new Error("Not implemented")
 };
