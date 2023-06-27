@@ -74,6 +74,11 @@ Parameters:
     Type: Number
     Default: 14
 
+Conditions:
+  CdcLegalConservationOnDemandDisabled: !Not [!Equals [!Ref CdcLegalConservationStreamMode, ON_DEMAND]]
+  LegalConservationEventUpdateOnDemandDisabled: !Not [!Equals [!Ref LegalConservationEventUpdateStreamMode, ON_DEMAND]]
+  SafeStorageEventOnDemandeDisabled: !Not [!Equals [!Ref SafeStorageEventStreamMode, ON_DEMAND]]
+
 Resources:
   ## KINESIS SOURCE STREAM FOR Change Data Capture
   ### AWS KMS / Server-side encryption for Kinesis Stream 
@@ -148,7 +153,7 @@ Resources:
   #   Properties:
   #     Name: !Sub "${ProjectName}-cdc-legal-conservation-stream-001"
   #     RetentionPeriodHours: !Ref CdcLegalConservationStreamRetentionHours
-  #     ShardCount: !Ref CdcLegalConservationStreamShardCount
+  #     ShardCount: ShardCount: !If [CdcLegalConservationOnDemandDisabled, !Ref CdcLegalConservationStreamShardCount, !Ref "AWS::NoValue"]
   #     StreamEncryption:
   #       EncryptionType: KMS
   #       KeyId:
@@ -165,7 +170,7 @@ Resources:
   #   Properties:
   #     Name: !Sub "${ProjectName}-legal-conservation-event-update-stream-001"
   #     RetentionPeriodHours: !Ref LegalConservationEventUpdateStreamRetentionHours
-  #     ShardCount: !Ref LegalConservationEventUpdateStreamShardCount
+  #     ShardCount: ShardCount: !If [LegalConservationEventUpdateOnDemandDisabled, !Ref LegalConservationEventUpdateStreamShardCount, !Ref "AWS::NoValue"]
   #     StreamEncryption:
   #       EncryptionType: KMS
   #       KeyId:
@@ -182,7 +187,7 @@ Resources:
     Properties:
       Name: !Sub "${ProjectName}-safe-storage-event-stream"
       RetentionPeriodHours: !Ref SafeStorageEventreamRetentionHours
-      ShardCount: !Ref SafeStorageEventStreamShardCount
+      ShardCount: !If [SafeStorageEventOnDemandeDisabled, !Ref SafeStorageEventStreamShardCount, !Ref "AWS::NoValue"]
       StreamEncryption:
         EncryptionType: KMS
         KeyId:
