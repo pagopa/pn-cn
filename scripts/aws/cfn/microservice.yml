@@ -124,6 +124,15 @@ Parameters:
 
   EventBusDeadLetterQueueArn:
     Type: String
+
+  EnvType:
+    Type: String
+
+Conditions:
+  IsNotProd: !Not [ !Equals [ !Ref EnvType, 'prod' ]]
+  IsNotUat: !Not [ !Equals [ !Ref EnvType, 'uat' ]]
+  IsCNEnabled: !Or [ !Condition IsNotProd, !Condition IsNotUat ]
+
 Resources:
   #########################################################
   ###             SafeStorageListener Lambda            ###
@@ -227,6 +236,7 @@ Resources:
 
   # SafeStorageListenerEventSourceMapping:
   #   Type: AWS::Lambda::EventSourceMapping
+  #   Condition: IsCNEnabled  
   #   Properties:
   #     BatchSize: 20
   #     BisectBatchOnFunctionError: true
@@ -243,6 +253,7 @@ Resources:
   # # CDC to SLA Violation Checker
   # SafeStorageListenerLambdaKinesisSourceMapping:
   #   Type: AWS::Lambda::EventSourceMapping
+  #   Condition: IsCNEnabled
   #   Properties:
   #     BatchSize: 20
   #     BisectBatchOnFunctionError: true
