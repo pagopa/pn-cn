@@ -426,7 +426,6 @@ Resources:
   #           Resource: !Ref CdcLegalConservationKinesisSourceStreamArn  
   #         - Sid: Encrypt
   #           Action:
-  #           - Action:
   #             - kms:Encrypt*
   #             - kms:Decrypt*
   #             - kms:ReEncrypt*
@@ -474,7 +473,6 @@ Resources:
                 Resource: !Ref SafeStorageEventKinesisStreamArn  
               - Sid: Encrypt
                 Action:
-                - Action:
                   - kms:Encrypt*
                   - kms:Decrypt*
                   - kms:ReEncrypt*
