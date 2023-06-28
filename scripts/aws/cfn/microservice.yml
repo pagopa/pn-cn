@@ -422,6 +422,7 @@ Resources:
   #         - Sid: PutEvents
   #           Action:
   #           - kinesis:PutRecords
+  #           - kinesis:PutRecord
   #           Effect: Allow
   #           Resource: !Ref CdcLegalConservationKinesisSourceStreamArn  
   #         - Sid: Encrypt
@@ -469,6 +470,7 @@ Resources:
               - Sid: PutEvents
                 Action:
                   - kinesis:PutRecords
+                  - kinesis:PutRecord
                 Effect: Allow
                 Resource: !Ref SafeStorageEventKinesisStreamArn  
               - Sid: Encrypt
