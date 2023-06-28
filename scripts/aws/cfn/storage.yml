@@ -243,6 +243,8 @@ Resources:
           AttributeType: "S"
         - AttributeName: "entityName_externalId"
           AttributeType: "S"
+        - AttributeName: "sk_entityName_externalId"
+          AttributeType: "S"
         - AttributeName: "errorCode_errorResponseTimestampYearMonth"
           AttributeType: "S"
       KeySchema:
