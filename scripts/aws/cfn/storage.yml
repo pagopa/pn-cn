@@ -80,28 +80,28 @@ Conditions:
   SafeStorageEventOnDemandeDisabled: !Not [!Equals [!Ref SafeStorageEventStreamMode, ON_DEMAND]]
 
 Resources:
-  ## KINESIS SOURCE STREAM FOR Change Data Capture
-  ### AWS KMS / Server-side encryption for Kinesis Stream 
-  # CdcLegalConservationKinesisServerSideEncryptionKey:
-  #   Type: AWS::KMS::Key
-  #   Properties:
-  #     KeyPolicy:
-  #       Statement:
-  #         - Action: kms:*
-  #           Effect: Allow
-  #           Principal:
-  #             AWS:
-  #               Fn::Join:
-  #                 - ""
-  #                 - - "arn:"
-  #                   - Ref: AWS::Partition
-  #                   - ":iam::"
-  #                   - Ref: AWS::AccountId
-  #                   - :root
-  #           Resource: "*"
-  #       Version: "2012-10-17"
-  #   UpdateReplacePolicy: Retain
-  #   DeletionPolicy: Retain
+  # KINESIS SOURCE STREAM FOR Change Data Capture
+  ## AWS KMS / Server-side encryption for Kinesis Stream 
+  CdcLegalConservationKinesisServerSideEncryptionKey:
+    Type: AWS::KMS::Key
+    Properties:
+      KeyPolicy:
+        Statement:
+          - Action: kms:*
+            Effect: Allow
+            Principal:
+              AWS:
+                Fn::Join:
+                  - ""
+                  - - "arn:"
+                    - Ref: AWS::Partition
+                    - ":iam::"
+                    - Ref: AWS::AccountId
+                    - :root
+            Resource: "*"
+        Version: "2012-10-17"
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
 
   SafeStorageEventKinesisServerSideEncryptionKey:
     Type: AWS::KMS::Key
@@ -124,61 +124,61 @@ Resources:
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
 
-  # LegalConservationEventUpdateKinesisServerSideEncryptionKey:
-  #   Type: AWS::KMS::Key
-  #   Properties:
-  #     KeyPolicy:
-  #       Statement:
-  #         - Action: kms:*
-  #           Effect: Allow
-  #           Principal:
-  #             AWS:
-  #               Fn::Join:
-  #                 - ""
-  #                 - - "arn:"
-  #                   - Ref: AWS::Partition
-  #                   - ":iam::"
-  #                   - Ref: AWS::AccountId
-  #                   - :root
-  #           Resource: "*"
-  #       Version: "2012-10-17"
-  #   UpdateReplacePolicy: Retain
-  #   DeletionPolicy: Retain
+  LegalConservationEventUpdateKinesisServerSideEncryptionKey:
+    Type: AWS::KMS::Key
+    Properties:
+      KeyPolicy:
+        Statement:
+          - Action: kms:*
+            Effect: Allow
+            Principal:
+              AWS:
+                Fn::Join:
+                  - ""
+                  - - "arn:"
+                    - Ref: AWS::Partition
+                    - ":iam::"
+                    - Ref: AWS::AccountId
+                    - :root
+            Resource: "*"
+        Version: "2012-10-17"
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
 
-  ### Kinesis Data Stream 
-  # CdcLegalConservationKinesisStream:
-  #   Type: AWS::Kinesis::Stream
-  #   DeletionPolicy: Retain
-  #   UpdateReplacePolicy: Retain
-  #   Properties:
-  #     Name: !Sub "${ProjectName}-cdc-legal-conservation-stream-001"
-  #     RetentionPeriodHours: !Ref CdcLegalConservationStreamRetentionHours
-  #     ShardCount: ShardCount: !If [CdcLegalConservationOnDemandDisabled, !Ref CdcLegalConservationStreamShardCount, !Ref "AWS::NoValue"]
-  #     StreamEncryption:
-  #       EncryptionType: KMS
-  #       KeyId:
-  #         Fn::GetAtt:
-  #           - CdcLegalConservationKinesisServerSideEncryptionKey
-  #           - Arn
-  #     StreamModeDetails:
-  #       StreamMode: !Ref CdcLegalConservationStreamMode   
+  ## Kinesis Data Stream 
+  CdcLegalConservationKinesisStream:
+    Type: AWS::Kinesis::Stream
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      Name: !Sub "${ProjectName}-cdc-legal-conservation-stream-001"
+      RetentionPeriodHours: !Ref CdcLegalConservationStreamRetentionHours
+      ShardCount: !If [CdcLegalConservationOnDemandDisabled, !Ref CdcLegalConservationStreamShardCount, !Ref "AWS::NoValue"]
+      StreamEncryption:
+        EncryptionType: KMS
+        KeyId:
+          Fn::GetAtt:
+            - CdcLegalConservationKinesisServerSideEncryptionKey
+            - Arn
+      StreamModeDetails:
+        StreamMode: !Ref CdcLegalConservationStreamMode   
 
-  # LegalConservationUpdateKinesisStream:
-  #   Type: AWS::Kinesis::Stream
-  #   DeletionPolicy: Retain
-  #   UpdateReplacePolicy: Retain
-  #   Properties:
-  #     Name: !Sub "${ProjectName}-legal-conservation-event-update-stream-001"
-  #     RetentionPeriodHours: !Ref LegalConservationEventUpdateStreamRetentionHours
-  #     ShardCount: ShardCount: !If [LegalConservationEventUpdateOnDemandDisabled, !Ref LegalConservationEventUpdateStreamShardCount, !Ref "AWS::NoValue"]
-  #     StreamEncryption:
-  #       EncryptionType: KMS
-  #       KeyId:
-  #         Fn::GetAtt:
-  #           - LegalConservationEventUpdateKinesisServerSideEncryptionKey
-  #           - Arn
-  #     StreamModeDetails:
-  #       StreamMode: !Ref LegalConservationEventUpdateStreamMode   
+  LegalConservationUpdateKinesisStream:
+    Type: AWS::Kinesis::Stream
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      Name: !Sub "${ProjectName}-legal-conservation-event-update-stream-001"
+      RetentionPeriodHours: !Ref LegalConservationEventUpdateStreamRetentionHours
+      ShardCount: !If [LegalConservationEventUpdateOnDemandDisabled, !Ref LegalConservationEventUpdateStreamShardCount, !Ref "AWS::NoValue"]
+      StreamEncryption:
+        EncryptionType: KMS
+        KeyId:
+          Fn::GetAtt:
+            - LegalConservationEventUpdateKinesisServerSideEncryptionKey
+            - Arn
+      StreamModeDetails:
+        StreamMode: !Ref LegalConservationEventUpdateStreamMode   
 
   SafeStorageEventKinesisStream:
     Type: AWS::Kinesis::Stream
@@ -322,76 +322,76 @@ Resources:
   #     StreamSpecification:
   #       StreamViewType: NEW_IMAGE
 
-  # # SQS Queue
-  # SafeStorageListenerDLQ:
-  #   Type: AWS::CloudFormation::Stack
-  #   UpdateReplacePolicy: Retain
-  #   DeletionPolicy: Retain 
-  #   Properties:
-  #     TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/sqs-queue.yaml"
-  #     Parameters:
-  #       QueueName: !Sub "${ProjectName}-cn-safe-storage-listener-stream-dlq"
-  #       DelaySeconds: 10
-  #       HasDLQ: "false"
-  #       QueueHasAlarm: "true"
-  #       AlarmSNSTopicName: !Ref AlarmSNSTopicName
+  # SQS Queue
+  SafeStorageListenerDLQ:
+    Type: AWS::CloudFormation::Stack
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain 
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/sqs-queue.yaml"
+      Parameters:
+        QueueName: !Sub "${ProjectName}-cn-safe-storage-listener-stream-dlq"
+        DelaySeconds: 10
+        HasDLQ: "false"
+        QueueHasAlarm: "true"
+        AlarmSNSTopicName: !Ref AlarmSNSTopicName
 
-  # LegalConservationTrackerDLQ:
-  #   Type: AWS::CloudFormation::Stack
-  #   UpdateReplacePolicy: Retain
-  #   DeletionPolicy: Retain
-  #   Properties:
-  #     TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/sqs-queue.yaml"
-  #     Parameters:
-  #       QueueName: !Sub '${ProjectName}-legal_conservation_tracker_DLQ'
-  #       DelaySeconds: 1
-  #       AlarmSNSTopicName: !Ref AlarmSNSTopicName
-  #       HasDLQ: "false"
-  #       QueueHasAlarm: "true"
+  LegalConservationTrackerDLQ:
+    Type: AWS::CloudFormation::Stack
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/sqs-queue.yaml"
+      Parameters:
+        QueueName: !Sub '${ProjectName}-legal_conservation_tracker_DLQ'
+        DelaySeconds: 1
+        AlarmSNSTopicName: !Ref AlarmSNSTopicName
+        HasDLQ: "false"
+        QueueHasAlarm: "true"
 
-  # LegalConservationStarterLambdaLogGroup:
-  #   Type: AWS::CloudFormation::Stack
-  #   UpdateReplacePolicy: Retain
-  #   DeletionPolicy: Retain    
-  #   Properties:
-  #     TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/log-group.yaml"
-  #     Parameters:
-  #       LogGroupName: !Sub "${ProjectName}-legalConservationStarter"
-  #       LogGroupRetention: !Ref LogRetention
-  #       LogGroupPrefix: '/aws/lambda'
+  LegalConservationStarterLambdaLogGroup:
+    Type: AWS::CloudFormation::Stack
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain    
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/log-group.yaml"
+      Parameters:
+        LogGroupName: !Sub "${ProjectName}-legalConservationStarter"
+        LogGroupRetention: !Ref LogRetention
+        LogGroupPrefix: '/aws/lambda'
 
-  # PreSignedUrlGeneratorLambdaLogGroup:
-  #   Type: AWS::CloudFormation::Stack
-  #   UpdateReplacePolicy: Retain
-  #   DeletionPolicy: Retain    
-  #   Properties:
-  #     TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/log-group.yaml"
-  #     Parameters:
-  #       LogGroupName: !Sub "${ProjectName}-preSignedUrlGenerator"
-  #       LogGroupRetention: !Ref LogRetention
-  #       LogGroupPrefix: '/aws/lambda'
+  PreSignedUrlGeneratorLambdaLogGroup:
+    Type: AWS::CloudFormation::Stack
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain    
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/log-group.yaml"
+      Parameters:
+        LogGroupName: !Sub "${ProjectName}-preSignedUrlGenerator"
+        LogGroupRetention: !Ref LogRetention
+        LogGroupPrefix: '/aws/lambda'
 
-  # EventUpdateReceiverLambdaLogGroup:
-  #   Type: AWS::CloudFormation::Stack
-  #   UpdateReplacePolicy: Retain
-  #   DeletionPolicy: Retain    
-  #   Properties:
-  #     TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/log-group.yaml"
-  #     Parameters:
-  #       LogGroupName: !Sub "${ProjectName}-eventUpdateRecevier"
-  #       LogGroupRetention: !Ref LogRetention
-  #       LogGroupPrefix: '/aws/lambda'
+  EventUpdateReceiverLambdaLogGroup:
+    Type: AWS::CloudFormation::Stack
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain    
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/log-group.yaml"
+      Parameters:
+        LogGroupName: !Sub "${ProjectName}-eventUpdateRecevier"
+        LogGroupRetention: !Ref LogRetention
+        LogGroupPrefix: '/aws/lambda'
 
-  # LegalConservationTrackerLambdaLogGroup:
-  #   Type: AWS::CloudFormation::Stack
-  #   UpdateReplacePolicy: Retain
-  #   DeletionPolicy: Retain    
-  #   Properties:
-  #     TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/log-group.yaml"
-  #     Parameters:
-  #       LogGroupName: !Sub "${ProjectName}-legalConservationTracker"
-  #       LogGroupRetention: !Ref LogRetention
-  #       LogGroupPrefix: '/aws/lambda'
+  LegalConservationTrackerLambdaLogGroup:
+    Type: AWS::CloudFormation::Stack
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain    
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/log-group.yaml"
+      Parameters:
+        LogGroupName: !Sub "${ProjectName}-legalConservationTracker"
+        LogGroupRetention: !Ref LogRetention
+        LogGroupPrefix: '/aws/lambda'
 
 Outputs:
   # LegalConservationRequestDynamoTableName:
@@ -401,59 +401,59 @@ Outputs:
   #   Description: ARN of dynamodb table containing notifications metadata
   #   Value: !Sub "${LegalConservationRequestTable.Arn}"
 
-  # # Kinesis Source Stream containing the DynamoDB Change Data Capture events
-  # CdcLegalConservationKinesisSourceStreamArn:
-  #   Description: "Kinesis source CDC stream ARN"
-  #   Value: !GetAtt CdcLegalConservationKinesisStream.Arn
-  # CdcLegalConservationKinesisSourceStreamKeyArn:
-  #   Description: "Kinesis source CDC stream crypto key ARN"
-  #   Value: !GetAtt CdcLegalConservationKinesisServerSideEncryptionKey.Arn
+  # Kinesis Source Stream containing the DynamoDB Change Data Capture events
+  CdcLegalConservationKinesisSourceStreamArn:
+    Description: "Kinesis source CDC stream ARN"
+    Value: !GetAtt CdcLegalConservationKinesisStream.Arn
+  CdcLegalConservationKinesisSourceStreamKeyArn:
+    Description: "Kinesis source CDC stream crypto key ARN"
+    Value: !GetAtt CdcLegalConservationKinesisServerSideEncryptionKey.Arn
 
-  # LegalConservationUpdateKinesisStreamArn:
-  #   Value: !GetAtt LegalConservationUpdateKinesisStream.Arn
-  # LegalConservationUpdateKinesisStreamKeyArn:
-  #   Value: !GetAtt LegalConservationEventUpdateKinesisServerSideEncryptionKey.Arn
+  LegalConservationUpdateKinesisStreamArn:
+    Value: !GetAtt LegalConservationUpdateKinesisStream.Arn
+  LegalConservationUpdateKinesisStreamKeyArn:
+    Value: !GetAtt LegalConservationEventUpdateKinesisServerSideEncryptionKey.Arn
 
   SafeStorageEventKinesisStreamArn:
     Value: !GetAtt SafeStorageEventKinesisStream.Arn
   SafeStorageEventKinesisStreamKeyArn:
     Value: !GetAtt SafeStorageEventKinesisServerSideEncryptionKey.Arn
 
-  # LegalConservationTrackerDLQName:
-  #   Value: !GetAtt LegalConservationTrackerDLQ.Outputs.QueueName
-  #   Description: queue name
-  # LegalConservationTrackerDLQURL:
-  #   Value: !GetAtt LegalConservationTrackerDLQ.Outputs.QueueURL
-  #   Description: e URL
-  # LegalConservationTrackerDLQARN:
-  #   Value: !GetAtt LegalConservationTrackerDLQ.Outputs.QueueARN
-  #   Description: queue ARN
-  # LegalConservationTrackerDLQAlarmARN:
-  #   Value: !GetAtt LegalConservationTrackerDLQ.Outputs.SqsDLQAlarmArn
-  #   Description: alarm ARN
+  LegalConservationTrackerDLQName:
+    Value: !GetAtt LegalConservationTrackerDLQ.Outputs.QueueName
+    Description: queue name
+  LegalConservationTrackerDLQURL:
+    Value: !GetAtt LegalConservationTrackerDLQ.Outputs.QueueURL
+    Description: e URL
+  LegalConservationTrackerDLQARN:
+    Value: !GetAtt LegalConservationTrackerDLQ.Outputs.QueueARN
+    Description: queue ARN
+  LegalConservationTrackerDLQAlarmARN:
+    Value: !GetAtt LegalConservationTrackerDLQ.Outputs.SqsDLQAlarmArn
+    Description: alarm ARN
 
-  # SafeStorageListenerDLQName:
-  #   Value: !GetAtt SafeStorageListenerDLQ.Outputs.QueueName
-  #   Description: queue name
-  # SafeStorageListenerDLQURL:
-  #   Value: !GetAtt SafeStorageListenerDLQ.Outputs.QueueURL
-  #   Description: e URL
-  # SafeStorageListenerDLQARN:
-  #   Value: !GetAtt SafeStorageListenerDLQ.Outputs.QueueARN
-  #   Description: queue ARN
-  # SafeStorageListenerDLQAlarmARN:
-  #   Value: !GetAtt SafeStorageListenerDLQ.Outputs.SqsDLQAlarmArn
-  #   Description: alarm ARN
+  SafeStorageListenerDLQName:
+    Value: !GetAtt SafeStorageListenerDLQ.Outputs.QueueName
+    Description: queue name
+  SafeStorageListenerDLQURL:
+    Value: !GetAtt SafeStorageListenerDLQ.Outputs.QueueURL
+    Description: e URL
+  SafeStorageListenerDLQARN:
+    Value: !GetAtt SafeStorageListenerDLQ.Outputs.QueueARN
+    Description: queue ARN
+  SafeStorageListenerDLQAlarmARN:
+    Value: !GetAtt SafeStorageListenerDLQ.Outputs.SqsDLQAlarmArn
+    Description: alarm ARN
 
-  # # Lambda functions
-  # SafeStorageListenerLambdaName:
-  #   Value: !Sub "${ProjectName}-legalConservationStarter"
+  # Lambda functions
+  SafeStorageListenerLambdaName:
+    Value: !Sub "${ProjectName}-legalConservationStarter"
 
-  # PreSignedUrlGeneratorLambdaName:
-  #   Value: !Sub "${ProjectName}-preSignedUrlGenerator"
+  PreSignedUrlGeneratorLambdaName:
+    Value: !Sub "${ProjectName}-preSignedUrlGenerator"
 
-  # EventUpdateReceiverLambdaName:
-  #   Value: !Sub "${ProjectName}-eventUpdateRecevier"
+  EventUpdateReceiverLambdaName:
+    Value: !Sub "${ProjectName}-eventUpdateRecevier"
 
-  # LegalConservationTrackerLambdaName:
-  #   Value: !Sub "${ProjectName}-legalConservationTracker"
+  LegalConservationTrackerLambdaName:
+    Value: !Sub "${ProjectName}-legalConservationTracker"
