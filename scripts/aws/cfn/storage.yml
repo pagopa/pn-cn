@@ -197,49 +197,33 @@ Resources:
       StreamModeDetails:
         StreamMode: !Ref SafeStorageEventStreamMode  
 
-  # LegalConservationRequestTable:
-  #   Type: AWS::DynamoDB::Table
-  #   UpdateReplacePolicy: Retain
-  #   DeletionPolicy: Retain 
-  #   Properties:
-  #     TableName: !Sub "${ProjectName}-legal-conservation-request"
-  #     AttributeDefinitions:
-  #       # primary key
-  #       - AttributeName: "pk" # entity type (req or sla violation) concatenated to document type
-  #         AttributeType: "S"
-  #       - AttributeName: "sk" # string concatenation based on step type
-  #         AttributeType: "S"
-  #       - AttributeName: "requestTimestampYearMonth"
-  #         AttributeType: "S"
-  #       - AttributeName: "requestTimestamp"
-  #         AttributeType: "S"
-  #     KeySchema:
-  #       - AttributeName: "pk"
-  #         KeyType: "HASH"
-  #       - AttributeName: "sk"
-  #         KeyType: "RANGE"
-  #     GlobalSecondaryIndexes:
-  #       -
-  #         IndexName: "by-request-timestamp"
-  #         KeySchema:
-  #           -
-  #             AttributeName: "requestTimestampYearMonth"
-  #             KeyType: "HASH"
-  #           - 
-  #             AttributeName: "requestTimestamp"
-  #             KeyType: "RANGE"
-  #         Projection:
-  #           ProjectionType: "ALL"                     
-  #     BillingMode: "PAY_PER_REQUEST"
-  #     TimeToLiveSpecification:
-  #       AttributeName: "sla_TTL"
-  #       Enabled: true
-  #     PointInTimeRecoverySpecification:
-  #       PointInTimeRecoveryEnabled: true
-  #     KinesisStreamSpecification:
-  #       StreamArn: !GetAtt CdcLegalConservationKinesisStream.Arn
-  #     StreamSpecification:
-  #       StreamViewType: NEW_IMAGE
+  LegalConservationRequestTable:
+    Type: AWS::DynamoDB::Table
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain 
+    Properties:
+      TableName: !Sub "${ProjectName}-legal-conservation-request"
+      AttributeDefinitions:
+        # primary key
+        - AttributeName: "pk" # entity type (req or sla violation) concatenated to fileKey
+          AttributeType: "S"
+        - AttributeName: "sk" # entity type (req or sla violation) concatenated to fileKey
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "pk"
+          KeyType: "HASH"
+        - AttributeName: "sk"
+          KeyType: "RANGE"
+      BillingMode: "PAY_PER_REQUEST"
+      TimeToLiveSpecification:
+        AttributeName: "sla_TTL"
+        Enabled: true
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      KinesisStreamSpecification:
+        StreamArn: !GetAtt CdcLegalConservationKinesisStream.Arn
+      StreamSpecification:
+        StreamViewType: NEW_IMAGE
 
   # LegalConservationRequestHistoryTable:
   #   Type: AWS::DynamoDB::Table
@@ -394,12 +378,19 @@ Resources:
         LogGroupPrefix: '/aws/lambda'
 
 Outputs:
-  # LegalConservationRequestDynamoTableName:
+  LegalConservationRequestDynamoTableName:
+    Description: Name of dynamodb table containing notifications metadata
+    Value: !Ref LegalConservationRequestTable
+  LegalConservationRequestDynamoTableArn:
+    Description: ARN of dynamodb table containing notifications metadata
+    Value: !Sub "${LegalConservationRequestTable.Arn}"
+
+  # LegalConservationRequestHistoryTableName:
   #   Description: Name of dynamodb table containing notifications metadata
-  #   Value: !Ref LegalConservationRequestTable
-  # LegalConservationRequestDynamoTableArn:
+  #   Value: !Ref LegalConservationRequestHistoryTable
+  # LegalConservationRequestHistoryTableArn:
   #   Description: ARN of dynamodb table containing notifications metadata
-  #   Value: !Sub "${LegalConservationRequestTable.Arn}"
+  #   Value: !Sub "${LegalConservationRequestHistoryTable.Arn}"
 
   # Kinesis Source Stream containing the DynamoDB Change Data Capture events
   CdcLegalConservationKinesisSourceStreamArn:
