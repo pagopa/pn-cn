@@ -269,7 +269,7 @@ Resources:
               AttributeName: "entityName_externalId"
               KeyType: "HASH"
             - 
-              AttributeName: "entityName_externalId"
+              AttributeName: "sk_entityName_externalId"
               KeyType: "RANGE"
           Projection:
             ProjectionType: "ALL"            
