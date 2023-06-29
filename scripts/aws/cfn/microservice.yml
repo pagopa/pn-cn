@@ -156,7 +156,7 @@ Resources:
       Handler: "index.handler"
       Code:
         S3Bucket: !Ref LambdasBucketName
-        S3Key: !Sub "${BucketBasePath}/safeStorageListener.zip"
+        S3Key: !Sub "${BucketBasePath}/legalConservationStarter.zip"
       Role: !GetAtt SafeStorageListenerLambdaRole.Arn
       TracingConfig:
         Mode: Active
