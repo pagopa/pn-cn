@@ -372,7 +372,7 @@ Resources:
       FunctionName: !Ref PreSignedUrlGeneratorLambda
       Action: lambda:InvokeFunction
       Principal: apigateway.amazonaws.com
-      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${PnCoreAwsAccountId}:*/*/*/'
+      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${PnCoreAwsAccountId}:*/*'
 
   # #########################################################
   # ###              EventUpdateReceiver                  ###
@@ -464,7 +464,7 @@ Resources:
       FunctionName: !Ref EventUpdateReceiverLambda
       Action: lambda:InvokeFunction
       Principal: apigateway.amazonaws.com
-      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${PnCoreAwsAccountId}:*/*/*/'
+      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${PnCoreAwsAccountId}:*/*'
 
   # Allow event bus rules to write to kinesis stream
   EventBusEnqueueRole:
