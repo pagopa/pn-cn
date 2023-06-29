@@ -374,10 +374,10 @@ Outputs:
     Description: ARN of dynamodb table containing notifications metadata
     Value: !Sub "${LegalConservationRequestTable.Arn}"
 
-  LegalConservationRequestHistoryTableName:
+  LegalConservationRequestHistoryDynamoTableName:
     Description: Name of dynamodb table containing notifications metadata
     Value: !Ref LegalConservationRequestHistoryTable
-  LegalConservationRequestHistoryTableArn:
+  LegalConservationRequestHistoryDynamoTableArn:
     Description: ARN of dynamodb table containing notifications metadata
     Value: !Sub "${LegalConservationRequestHistoryTable.Arn}"
 
