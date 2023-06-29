@@ -506,7 +506,7 @@ Resources:
       EventPattern:
         detail-type: [ "SafeStorageOutcomeEvent" ]
         detail:
-          documentType: [ 'PN_LEGAL_FACTS', 'PN_DOWNTIME_LEGAL_FACTS', 'PN_EXTERNAL_LEGAL_FACTS', 'PN_LOGS_ARCHIVE_AUDIT5Y', 'PN_LOGS_ARCHIVE_AUDIT10Y' ]
+          documentType: [ 'PN_AAR', 'PN_LEGAL_FACTS', 'PN_DOWNTIME_LEGAL_FACTS', 'PN_EXTERNAL_LEGAL_FACTS', 'PN_LOGS_ARCHIVE_AUDIT5Y', 'PN_LOGS_ARCHIVE_AUDIT10Y' ]
       Targets: 
         - Id: !Sub '${ProjectName}-ConfinfoEventbus-SafeStore2LegalConservation'
           Arn: !Ref SafeStorageEventKinesisStreamArn
