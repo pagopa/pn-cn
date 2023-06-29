@@ -291,87 +291,87 @@ Resources:
   # ###            PreSignedUrlGeneratorLambda            ###
   # #########################################################
 
-  # PreSignedUrlGeneratorLambdaSecGroup:
-  #   Type: AWS::EC2::SecurityGroup
-  #   Properties:
-  #     GroupDescription: !Sub '${PreSignedUrlGeneratorLambdaName}-sec-group'
-  #     VpcId: !Ref VpcId
+  PreSignedUrlGeneratorLambdaSecGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: !Sub '${PreSignedUrlGeneratorLambdaName}-sec-group'
+      VpcId: !Ref VpcId
 
   # # Lambda function
-  # PreSignedUrlGeneratorLambda:
-  #   Type: AWS::Lambda::Function
-  #   Properties:
-  #     FunctionName: !Ref PreSignedUrlGeneratorLambdaName
-  #     Runtime: nodejs18.x
-  #     Handler: "index.handler"
-  #     Code:
-  #       S3Bucket: !Ref LambdasBucketName
-  #       S3Key: !Sub "${BucketBasePath}/preSignedUrlGenerator.zip"
-  #     Role: !GetAtt PreSignedUrlGeneratorLambdaRole.Arn
-  #     Environment:
-  #       Variables:
-  #         REGION: !Sub ${AWS::Region}
-  #         SAFESTORAGE_BASE_URL: !Sub http://${ApplicationLoadBalancerDomain}:8080/safestorage
-  #         SAFESTORAGE_CLIENT_ID: !Ref SafeStorageClientId
-  #     VpcConfig:
-  #       SecurityGroupIds:
-  #         - !GetAtt PreSignedUrlGeneratorLambdaSecGroup.GroupId
-  #       SubnetIds: !Ref SubnetsIds          
-  #     TracingConfig:
-  #       Mode: Active
-  #     Layers:
-  #       - !Sub "arn:aws:lambda:${AWS::Region}:339249233099:layer:LambdaInsightsExtension:13"
-  #     Timeout: 10
+  PreSignedUrlGeneratorLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Ref PreSignedUrlGeneratorLambdaName
+      Runtime: nodejs18.x
+      Handler: "index.handler"
+      Code:
+        S3Bucket: !Ref LambdasBucketName
+        S3Key: !Sub "${BucketBasePath}/preSignedUrlGenerator.zip"
+      Role: !GetAtt PreSignedUrlGeneratorLambdaRole.Arn
+      Environment:
+        Variables:
+          REGION: !Sub ${AWS::Region}
+          SAFESTORAGE_BASE_URL: !Sub http://${ApplicationLoadBalancerDomain}:8080/safestorage
+          SAFESTORAGE_CLIENT_ID: !Ref SafeStorageClientId
+      VpcConfig:
+        SecurityGroupIds:
+          - !GetAtt PreSignedUrlGeneratorLambdaSecGroup.GroupId
+        SubnetIds: !Ref SubnetsIds          
+      TracingConfig:
+        Mode: Active
+      Layers:
+        - !Sub "arn:aws:lambda:${AWS::Region}:339249233099:layer:LambdaInsightsExtension:13"
+      Timeout: 10
 
   # # Lambda function role
-  # PreSignedUrlGeneratorLambdaRole:
-  #   Type: AWS::IAM::Role
-  #   Properties:
-  #     RoleName: !Sub ${PreSignedUrlGeneratorLambdaName}Role
-  #     AssumeRolePolicyDocument:
-  #       Version: 2012-10-17
-  #       Statement:
-  #         - Effect: Allow
-  #           Principal:
-  #             Service:
-  #               - lambda.amazonaws.com
-  #           Action:
-  #             - sts:AssumeRole
-  #     ManagedPolicyArns:
-  #       - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+  PreSignedUrlGeneratorLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${PreSignedUrlGeneratorLambdaName}Role
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
 
-  # PreSignedUrlGeneratorLambdaRolePolicy:
-  #   Type: AWS::IAM::Policy
-  #   Properties:
-  #     PolicyName: !Sub ${PreSignedUrlGeneratorLambdaName}RolePolicy
-  #     Roles:
-  #       - !Ref PreSignedUrlGeneratorLambdaRole
-  #     PolicyDocument:
-  #       Version: 2012-10-17
-  #       Statement:
-  #         - Sid: AllowLambdaToCreateLogs
-  #           Action:
-  #           - logs:CreateLogStream
-  #           - logs:PutLogEvents
-  #           Effect: Allow
-  #           Resource: "*"            
+  PreSignedUrlGeneratorLambdaRolePolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: !Sub ${PreSignedUrlGeneratorLambdaName}RolePolicy
+      Roles:
+        - !Ref PreSignedUrlGeneratorLambdaRole
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Sid: AllowLambdaToCreateLogs
+            Action:
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+            Effect: Allow
+            Resource: "*"            
 
-  # PreSignedUrlGeneratorLambdaAlarms:
-  #   Type: AWS::CloudFormation::Stack
-  #   Properties:
-  #     TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/lambda-alarms.yaml"
-  #     Parameters:
-  #       FunctionName: !Ref PreSignedUrlGeneratorLambda
-  #       AlarmSNSTopicArn: !Ref AlarmSNSTopicArn
+  PreSignedUrlGeneratorLambdaAlarms:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/lambda-alarms.yaml"
+      Parameters:
+        FunctionName: !Ref PreSignedUrlGeneratorLambda
+        AlarmSNSTopicArn: !Ref AlarmSNSTopicArn
 
   # # Lambda access right
-  # PreSignedUrlGeneratorLambdaPermission:
-  #   Type: AWS::Lambda::Permission
-  #   Properties:
-  #     FunctionName: !Ref PreSignedUrlGeneratorLambda
-  #     Action: lambda:InvokeFunction
-  #     Principal: apigateway.amazonaws.com
-  #     SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${PnCoreAwsAccountId}:*/*/*/'
+  PreSignedUrlGeneratorLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref PreSignedUrlGeneratorLambda
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${PnCoreAwsAccountId}:*/*/*/'
 
   # #########################################################
   # ###              EventUpdateReceiver                  ###
@@ -514,29 +514,29 @@ Resources:
             Arn: !Ref EventBusDeadLetterQueueArn
 
   # Dashboard
-  # MicroserviceDashboard:
-  #   Type: AWS::CloudFormation::Stack
-  #   Properties:
-  #     TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/microservice-cloudwatch-dashboard.yaml"
-  #     Parameters:
-  #       DashboardName: !Sub "${ProjectName}-cn"
-  #       DynamoDBTableNames: !Join
-  #         - ","
-  #         - - !Ref LegalConservationRequestDynamoTableName
-  #       LambdaArns: !Join
-  #         - ","
-  #         - - !GetAtt PreSignedUrlGeneratorLambda.Arn
-  #           - !GetAtt SafeStorageListenerLambda.Arn
-  #           - !GetAtt EventUpdateReceiverLambda.Arn
-  #       AlarmArns: !Join
-  #         - ","
-  #         - - !GetAtt PreSignedUrlGeneratorLambdaAlarms.Outputs.LambdaInvocationErrorLogsMetricAlarm
-  #           - !GetAtt SafeStorageListenerLambdaAlarms.Outputs.LambdaInvocationErrorLogsMetricAlarm
-  #           - !GetAtt EventUpdateReceiverLambdaAlarms.Outputs.LambdaInvocationErrorLogsMetricAlarm
-  #           - !Ref LegalConservationTrackerDLQAlarmARN
-  #           - !Ref SafeStorageListenerDLQAlarmARN
-  #       LogGroupsNames: !Join
-  #         - ","
-  #         - - !Sub /aws/lambda/${PreSignedUrlGeneratorLambda}
-  #           - !Sub /aws/lambda/${SafeStorageListenerLambda}
-  #           - !Sub /aws/lambda/${EventUpdateReceiverLambda}
+  MicroserviceDashboard:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/microservice-cloudwatch-dashboard.yaml"
+      Parameters:
+        DashboardName: !Sub "${ProjectName}-cn"
+        DynamoDBTableNames: !Join
+          - ","
+          - - !Ref LegalConservationRequestDynamoTableName
+        LambdaArns: !Join
+          - ","
+          - - !GetAtt PreSignedUrlGeneratorLambda.Arn
+            - !GetAtt SafeStorageListenerLambda.Arn
+            - !GetAtt EventUpdateReceiverLambda.Arn
+        AlarmArns: !Join
+          - ","
+          - - !GetAtt PreSignedUrlGeneratorLambdaAlarms.Outputs.LambdaInvocationErrorLogsMetricAlarm
+            - !GetAtt SafeStorageListenerLambdaAlarms.Outputs.LambdaInvocationErrorLogsMetricAlarm
+            - !GetAtt EventUpdateReceiverLambdaAlarms.Outputs.LambdaInvocationErrorLogsMetricAlarm
+            - !Ref LegalConservationTrackerDLQAlarmARN
+            - !Ref SafeStorageListenerDLQAlarmARN
+        LogGroupsNames: !Join
+          - ","
+          - - !Sub /aws/lambda/${PreSignedUrlGeneratorLambda}
+            - !Sub /aws/lambda/${SafeStorageListenerLambda}
+            - !Sub /aws/lambda/${EventUpdateReceiverLambda}
