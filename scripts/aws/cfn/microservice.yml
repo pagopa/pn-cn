@@ -38,21 +38,30 @@ Parameters:
     Type: String
     Description: "Keep versioning of commitIds used for cloudformation templates"
 
-  # LegalConservationRequestDynamoTableArn:
-  #   Type: String
-  #   Description: ARN of dynamodb table containing notifications metadata
+  LegalConservationRequestDynamoTableArn:
+    Type: String
+    Description: ARN of dynamodb table containing notifications metadata
 
-  # LegalConservationRequestDynamoTableName:
-  #   Type: String
-  #   Description: Name of dynamodb table containing notifications metadata
+  LegalConservationRequestDynamoTableName:
+    Type: String
+    Description: Name of dynamodb table containing notifications metadata
 
-  # CdcLegalConservationKinesisSourceStreamArn:
-  #   Type: String
-  #   Description: "Where to send CDC"
 
-  # CdcLegalConservationKinesisSourceStreamKeyArn:
-  #   Description: "Kinesis source CDC stream crypto key ARN"
-  #   Type: String
+  LegalConservationRequestHistoryDynamoTableArn:
+    Type: String
+    Description: ARN of dynamodb table containing notifications metadata
+
+  LegalConservationRequestHistoryDynamoTableName:
+    Type: String
+    Description: Name of dynamodb table containing notifications metadata
+
+  CdcLegalConservationKinesisSourceStreamArn:
+    Type: String
+    Description: "Where to send CDC"
+
+  CdcLegalConservationKinesisSourceStreamKeyArn:
+    Description: "Kinesis source CDC stream crypto key ARN"
+    Type: String
 
   SafeStorageEventKinesisStreamArn:
     Type: String
@@ -62,62 +71,59 @@ Parameters:
     Description: "Safe Storage Event Kinesis Data Stream crypto key ARN"
     Type: String
 
-  # VpcId:
-  #   Type: String
-  #   Description: 'VpcId where the microservice is going to be deployed'
+  VpcId:
+    Type: String
+    Description: 'VpcId where the microservice is going to be deployed'
     
-  # SubnetsIds:
-  #   Type: CommaDelimitedList
-  #   Description: 'subnets ids comma separated list. Where to deploy the microservice'
+  SubnetsIds:
+    Type: CommaDelimitedList
+    Description: 'subnets ids comma separated list. Where to deploy the microservice'
 
-  # ApplicationLoadBalancerDomain:
-  #   Type: String
-  #   Description: 'Base URL of the load balancer where the service is going to be reachable'
+  ApplicationLoadBalancerDomain:
+    Type: String
+    Description: 'Base URL of the load balancer where the service is going to be reachable'
 
-  # # SQS
-  # SafeStorageListenerLambdaName:
-  #   Type: String
+  # SQS
+  SafeStorageListenerLambdaName:
+    Type: String
 
-  # LegalConservationTrackerDLQARN:
-  #   Type: String
-  #   Description: 'DLQ ARN for LegalConservationTracker'
+  LegalConservationTrackerDLQARN:
+    Type: String
+    Description: 'DLQ ARN for LegalConservationTracker'
 
-  # SafeStorageListenerDLQName:
-  #   Type: String
+  SafeStorageListenerDLQName:
+    Type: String
 
-  # SafeStorageListenerDLQARN:
-  #   Type: String
+  SafeStorageListenerDLQARN:
+    Type: String
 
-  # SafeStorageListenerDLQAlarmARN:
-  #   Type: String
+  SafeStorageListenerDLQAlarmARN:
+    Type: String
 
-  # LegalConservationTrackerDLQAlarmARN:
-  #   Type: String
-  #   Description: 'DLQ Alarm ARN for LegalConservationTracker'
+  LegalConservationTrackerDLQAlarmARN:
+    Type: String
+    Description: 'DLQ Alarm ARN for LegalConservationTracker'
 
-  # PreSignedUrlGeneratorLambdaName:
-  #   Type: String
+  PreSignedUrlGeneratorLambdaName:
+    Type: String
 
-  # EventUpdateReceiverLambdaName:
-  #   Type: String
+  EventUpdateReceiverLambdaName:
+    Type: String
 
-  # ConservationServiceBaseUrl:
-  #   Type: String
+  ConservationServiceBaseUrl:
+    Type: String
 
-  # LegalConservationSecretArn:
-  #   Type: String
+  SafeStorageClientId:
+    Type: String
 
-  # SafeStorageClientId:
-  #   Type: String
+  PnCoreAwsAccountId:
+    Type: String
 
-  # PnCoreAwsAccountId:
-  #   Type: String
+  LegalConservationUpdateKinesisStreamArn:
+    Type: String
 
-  # LegalConservationUpdateKinesisStreamArn:
-  #   Type: String
-
-  # LegalConservationUpdateKinesisStreamKeyArn:
-  #   Type: String
+  LegalConservationUpdateKinesisStreamKeyArn:
+    Type: String
 
   ConfinfoEventBusArn:
     Type: String
@@ -128,329 +134,337 @@ Parameters:
   EnvType:
     Type: String
 
+  SecretName:
+    Type: String
+
 Conditions:
   IsNotProd: !Not [ !Equals [ !Ref EnvType, 'prod' ]]
   IsNotUat: !Not [ !Equals [ !Ref EnvType, 'uat' ]]
-  IsCNEnabled: !Or [ !Condition IsNotProd, !Condition IsNotUat ]
+  IsCNEnabled: !And [ !Condition IsNotProd, !Condition IsNotUat ]
 
 Resources:
   #########################################################
   ###             SafeStorageListener Lambda            ###
   #########################################################
 
-  # Lambda function
-  # SafeStorageListenerLambda:
-  #   Type: AWS::Lambda::Function
-  #   Properties:
-  #     FunctionName: !Ref SafeStorageListenerLambdaName
-  #     Runtime: nodejs18.x
-  #     Handler: "index.handler"
-  #     Code:
-  #       S3Bucket: !Ref LambdasBucketName
-  #       S3Key: !Sub "${BucketBasePath}/safeStorageListener.zip"
-  #     Role: !GetAtt SafeStorageListenerLambdaRole.Arn
-  #     TracingConfig:
-  #       Mode: Active
-  #     Layers:
-  #       - !Sub "arn:aws:lambda:${AWS::Region}:339249233099:layer:LambdaInsightsExtension:13"
-  #       - !Sub "arn:aws:lambda:${AWS::Region}:325218067255:layer:AWS-Parameters-and-Secrets-Lambda-Extension:2" 
-  #     Environment:
-  #       Variables:
-  #         REGION: !Sub ${AWS::Region}
-  #         DYNAMODB_TABLE: !Sub "${LegalConservationRequestDynamoTableName}"
-  #         CONSERVATION_SERVICE_BASE_URL: !Ref ConservationServiceBaseUrl
-  #         SECRET_ARN: !Ref LegalConservationSecretArn
-  #         SSM_PARAMETER_STORE_TIMEOUT_MILLIS: 5000
-  #     Timeout: 180
+  #Lambda function
+  SafeStorageListenerLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Ref SafeStorageListenerLambdaName
+      Runtime: nodejs18.x
+      Handler: "index.handler"
+      Code:
+        S3Bucket: !Ref LambdasBucketName
+        S3Key: !Sub "${BucketBasePath}/legalConservationStarter.zip"
+      Role: !GetAtt SafeStorageListenerLambdaRole.Arn
+      TracingConfig:
+        Mode: Active
+      Layers:
+        - !Sub "arn:aws:lambda:${AWS::Region}:339249233099:layer:LambdaInsightsExtension:13"
+        - !Sub "arn:aws:lambda:${AWS::Region}:325218067255:layer:AWS-Parameters-and-Secrets-Lambda-Extension:2" 
+      Environment:
+        Variables:
+          REGION: !Sub ${AWS::Region}
+          DYNAMODB_REQUEST_TABLE: !Sub "${LegalConservationRequestDynamoTableName}"
+          DYNAMODB_HISTORY_TABLE: !Sub "${LegalConservationRequestHistoryDynamoTableName}"
+          CONSERVATION_SERVICE_BASE_URL: !Ref ConservationServiceBaseUrl
+          SECRET_ARN: !Sub arn:${AWS::Partition}:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${SecretName}
+          SSM_PARAMETER_STORE_TIMEOUT_MILLIS: 5000
+      Timeout: 180
 
   # Lambda function role
-  # SafeStorageListenerLambdaRole:
-  #   Type: AWS::IAM::Role
-  #   Properties:
-  #     RoleName: !Sub ${SafeStorageListenerLambdaName}Role
-  #     AssumeRolePolicyDocument:
-  #       Version: 2012-10-17
-  #       Statement:
-  #         - Effect: Allow
-  #           Principal:
-  #             Service:
-  #               - lambda.amazonaws.com
-  #           Action:
-  #             - sts:AssumeRole
-  #     ManagedPolicyArns:
-  #       - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
-  #     Path: /
+  SafeStorageListenerLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${SafeStorageListenerLambdaName}Role
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Path: /
 
   # Lambda function IAM policy
-  # SafeStorageListenerLambdaRolePolicy:
-  #   Type: AWS::IAM::Policy
-  #   Properties:
-  #     PolicyName: !Sub ${SafeStorageListenerLambdaName}RolePolicy
-  #     Roles:
-  #       - !Ref SafeStorageListenerLambdaRole
-  #     PolicyDocument:
-  #       Version: 2012-10-17
-  #       Statement:
-  #         - Effect: Allow
-  #           Action:
-  #             - "dynamodb:*"
-  #           Resource:
-  #             - !Sub "${LegalConservationRequestDynamoTableArn}"
-  #             - !Sub "${LegalConservationRequestDynamoTableArn}/*"
-  #         - Sid: SecretActions
-  #           Effect: Allow
-  #           Action:
-  #             - secretsmanager:GetSecretValue
-  #           Resource: !Ref LegalConservationSecretArn
-  #         - Sid: AllowLambdaToCreateLogs
-  #           Action:
-  #           - logs:CreateLogStream
-  #           - logs:PutLogEvents
-  #           Effect: Allow
-  #           Resource: "*"            
-  #         - Effect: Allow
-  #           Action:
-  #             - kinesis:DescribeStream
-  #             - kinesis:DescribeStreamSummary
-  #             - kinesis:GetShardIterator
-  #             - kinesis:GetRecords
-  #             - kinesis:ListShards
-  #             - kinesis:ListStreams
-  #             - kinesis:SubscribeToShard
-  #           Resource: 
-  #             - !Ref CdcLegalConservationKinesisSourceStreamArn
-  #             - !Ref SafeStorageEventKinesisStreamArn
-  #         - Action: kms:Decrypt
-  #           Effect: Allow
-  #           Resource: 
-  #             - !Ref CdcLegalConservationKinesisSourceStreamKeyArn
-  #             - !Ref SafeStorageEventKinesisStreamKeyArn
-  #         - Effect: Allow
-  #           Action:
-  #             - sqs:ReceiveMessage
-  #             - sqs:DeleteMessage
-  #             - sqs:GetQueueAttributes
-  #             - sqs:SendMessage
-  #           Resource:
-  #             - !Ref SafeStorageListenerDLQARN
+  SafeStorageListenerLambdaRolePolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: !Sub ${SafeStorageListenerLambdaName}RolePolicy
+      Roles:
+        - !Ref SafeStorageListenerLambdaRole
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - "dynamodb:*"
+            Resource:
+              - !Sub "${LegalConservationRequestDynamoTableArn}"
+              - !Sub "${LegalConservationRequestDynamoTableArn}/*"
+              - !Sub "${LegalConservationRequestHistoryDynamoTableArn}"
+              - !Sub "${LegalConservationRequestHistoryDynamoTableArn}/*"
+          - Sid: SecretActions
+            Effect: Allow
+            Action:
+              - secretsmanager:GetSecretValue
+            Resource: !Sub arn:${AWS::Partition}:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${SecretName}
+          - Sid: AllowLambdaToCreateLogs
+            Action:
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+            Effect: Allow
+            Resource: "*"            
+          - Effect: Allow
+            Action:
+              - kinesis:DescribeStream
+              - kinesis:DescribeStreamSummary
+              - kinesis:GetShardIterator
+              - kinesis:GetRecords
+              - kinesis:ListShards
+              - kinesis:ListStreams
+              - kinesis:SubscribeToShard
+            Resource: 
+              - !Ref CdcLegalConservationKinesisSourceStreamArn
+              - !Ref SafeStorageEventKinesisStreamArn
+          - Action: kms:Decrypt
+            Effect: Allow
+            Resource: 
+              - !Ref CdcLegalConservationKinesisSourceStreamKeyArn
+              - !Ref SafeStorageEventKinesisStreamKeyArn
+          - Effect: Allow
+            Action:
+              - sqs:ReceiveMessage
+              - sqs:DeleteMessage
+              - sqs:GetQueueAttributes
+              - sqs:SendMessage
+            Resource:
+              - !Ref SafeStorageListenerDLQARN
 
-  # SafeStorageListenerEventSourceMapping:
-  #   Type: AWS::Lambda::EventSourceMapping
-  #   Condition: IsCNEnabled  
-  #   Properties:
-  #     BatchSize: 20
-  #     BisectBatchOnFunctionError: true
-  #     EventSourceArn: !Ref SafeStorageEventKinesisStreamArn
-  #     FunctionName: !GetAtt SafeStorageListenerLambda.Arn
-  #     FunctionResponseTypes:
-  #       - ReportBatchItemFailures
-  #     MaximumBatchingWindowInSeconds: 300 # 1 minute
-  #     StartingPosition: TRIM_HORIZON
-  #     DestinationConfig:
-  #       OnFailure:
-  #         Destination: !Ref SafeStorageListenerDLQARN
+  SafeStorageListenerEventSourceMapping:
+    Type: AWS::Lambda::EventSourceMapping
+    Condition: IsCNEnabled  
+    Properties:
+      BatchSize: 20
+      BisectBatchOnFunctionError: true
+      EventSourceArn: !Ref SafeStorageEventKinesisStreamArn
+      FunctionName: !GetAtt SafeStorageListenerLambda.Arn
+      FunctionResponseTypes:
+        - ReportBatchItemFailures
+      MaximumBatchingWindowInSeconds: 300 # 1 minute
+      StartingPosition: TRIM_HORIZON
+      DestinationConfig:
+        OnFailure:
+          Destination: !Ref SafeStorageListenerDLQARN
 
   # # CDC to SLA Violation Checker
-  # SafeStorageListenerLambdaKinesisSourceMapping:
-  #   Type: AWS::Lambda::EventSourceMapping
-  #   Condition: IsCNEnabled
-  #   Properties:
-  #     BatchSize: 20
-  #     BisectBatchOnFunctionError: true
-  #     EventSourceArn: !Ref CdcLegalConservationKinesisSourceStreamArn
-  #     FunctionName: !GetAtt SafeStorageListenerLambda.Arn
-  #     FunctionResponseTypes:
-  #       - ReportBatchItemFailures
-  #     MaximumBatchingWindowInSeconds: 300 # 1 minute
-  #     StartingPosition: TRIM_HORIZON
-  #     DestinationConfig:
-  #       OnFailure:
-  #         Destination: !Ref SafeStorageListenerDLQARN
+  SafeStorageListenerLambdaKinesisSourceMapping:
+    Type: AWS::Lambda::EventSourceMapping
+    Condition: IsCNEnabled
+    Properties:
+      BatchSize: 20
+      BisectBatchOnFunctionError: true
+      EventSourceArn: !Ref CdcLegalConservationKinesisSourceStreamArn
+      FunctionName: !GetAtt SafeStorageListenerLambda.Arn
+      FunctionResponseTypes:
+        - ReportBatchItemFailures
+      MaximumBatchingWindowInSeconds: 300 # 1 minute
+      StartingPosition: TRIM_HORIZON
+      DestinationConfig:
+        OnFailure:
+          Destination: !Ref SafeStorageListenerDLQARN
 
-  # SafeStorageListenerLambdaAlarms:
-  #   Type: AWS::CloudFormation::Stack
-  #   Properties:
-  #     TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/lambda-alarms.yaml"
-  #     Parameters:
-  #       FunctionName: !Ref SafeStorageListenerLambda
-  #       AlarmSNSTopicArn: !Ref AlarmSNSTopicArn
+  SafeStorageListenerLambdaAlarms:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/lambda-alarms.yaml"
+      Parameters:
+        FunctionName: !Ref SafeStorageListenerLambda
+        AlarmSNSTopicArn: !Ref AlarmSNSTopicArn
 
   # #########################################################
   # ###            PreSignedUrlGeneratorLambda            ###
   # #########################################################
 
-  # PreSignedUrlGeneratorLambdaSecGroup:
-  #   Type: AWS::EC2::SecurityGroup
-  #   Properties:
-  #     GroupDescription: !Sub '${PreSignedUrlGeneratorLambdaName}-sec-group'
-  #     VpcId: !Ref VpcId
+  PreSignedUrlGeneratorLambdaSecGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: !Sub '${PreSignedUrlGeneratorLambdaName}-sec-group'
+      VpcId: !Ref VpcId
 
   # # Lambda function
-  # PreSignedUrlGeneratorLambda:
-  #   Type: AWS::Lambda::Function
-  #   Properties:
-  #     FunctionName: !Ref PreSignedUrlGeneratorLambdaName
-  #     Runtime: nodejs18.x
-  #     Handler: "index.handler"
-  #     Code:
-  #       S3Bucket: !Ref LambdasBucketName
-  #       S3Key: !Sub "${BucketBasePath}/preSignedUrlGenerator.zip"
-  #     Role: !GetAtt PreSignedUrlGeneratorLambdaRole.Arn
-  #     Environment:
-  #       Variables:
-  #         REGION: !Sub ${AWS::Region}
-  #         SAFESTORAGE_BASE_URL: !Sub http://${ApplicationLoadBalancerDomain}:8080/safestorage
-  #         SAFESTORAGE_CLIENT_ID: !Ref SafeStorageClientId
-  #     VpcConfig:
-  #       SecurityGroupIds:
-  #         - !GetAtt PreSignedUrlGeneratorLambdaSecGroup.GroupId
-  #       SubnetIds: !Ref SubnetsIds          
-  #     TracingConfig:
-  #       Mode: Active
-  #     Layers:
-  #       - !Sub "arn:aws:lambda:${AWS::Region}:339249233099:layer:LambdaInsightsExtension:13"
-  #     Timeout: 10
+  PreSignedUrlGeneratorLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Ref PreSignedUrlGeneratorLambdaName
+      Runtime: nodejs18.x
+      Handler: "index.handler"
+      Code:
+        S3Bucket: !Ref LambdasBucketName
+        S3Key: !Sub "${BucketBasePath}/preSignedUrlGenerator.zip"
+      Role: !GetAtt PreSignedUrlGeneratorLambdaRole.Arn
+      Environment:
+        Variables:
+          REGION: !Sub ${AWS::Region}
+          SAFESTORAGE_BASE_URL: !Sub http://${ApplicationLoadBalancerDomain}:8080/safestorage
+          SAFESTORAGE_CLIENT_ID: !Ref SafeStorageClientId
+      VpcConfig:
+        SecurityGroupIds:
+          - !GetAtt PreSignedUrlGeneratorLambdaSecGroup.GroupId
+        SubnetIds: !Ref SubnetsIds          
+      TracingConfig:
+        Mode: Active
+      Layers:
+        - !Sub "arn:aws:lambda:${AWS::Region}:339249233099:layer:LambdaInsightsExtension:13"
+      Timeout: 10
 
   # # Lambda function role
-  # PreSignedUrlGeneratorLambdaRole:
-  #   Type: AWS::IAM::Role
-  #   Properties:
-  #     RoleName: !Sub ${PreSignedUrlGeneratorLambdaName}Role
-  #     AssumeRolePolicyDocument:
-  #       Version: 2012-10-17
-  #       Statement:
-  #         - Effect: Allow
-  #           Principal:
-  #             Service:
-  #               - lambda.amazonaws.com
-  #           Action:
-  #             - sts:AssumeRole
-  #     ManagedPolicyArns:
-  #       - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+  PreSignedUrlGeneratorLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${PreSignedUrlGeneratorLambdaName}Role
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
 
-  # PreSignedUrlGeneratorLambdaRolePolicy:
-  #   Type: AWS::IAM::Policy
-  #   Properties:
-  #     PolicyName: !Sub ${PreSignedUrlGeneratorLambdaName}RolePolicy
-  #     Roles:
-  #       - !Ref PreSignedUrlGeneratorLambdaRole
-  #     PolicyDocument:
-  #       Version: 2012-10-17
-  #       Statement:
-  #         - Sid: AllowLambdaToCreateLogs
-  #           Action:
-  #           - logs:CreateLogStream
-  #           - logs:PutLogEvents
-  #           Effect: Allow
-  #           Resource: "*"            
+  PreSignedUrlGeneratorLambdaRolePolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: !Sub ${PreSignedUrlGeneratorLambdaName}RolePolicy
+      Roles:
+        - !Ref PreSignedUrlGeneratorLambdaRole
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Sid: AllowLambdaToCreateLogs
+            Action:
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+            Effect: Allow
+            Resource: "*"            
 
-  # PreSignedUrlGeneratorLambdaAlarms:
-  #   Type: AWS::CloudFormation::Stack
-  #   Properties:
-  #     TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/lambda-alarms.yaml"
-  #     Parameters:
-  #       FunctionName: !Ref PreSignedUrlGeneratorLambda
-  #       AlarmSNSTopicArn: !Ref AlarmSNSTopicArn
+  PreSignedUrlGeneratorLambdaAlarms:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/lambda-alarms.yaml"
+      Parameters:
+        FunctionName: !Ref PreSignedUrlGeneratorLambda
+        AlarmSNSTopicArn: !Ref AlarmSNSTopicArn
 
   # # Lambda access right
-  # PreSignedUrlGeneratorLambdaPermission:
-  #   Type: AWS::Lambda::Permission
-  #   Properties:
-  #     FunctionName: !Ref PreSignedUrlGeneratorLambda
-  #     Action: lambda:InvokeFunction
-  #     Principal: apigateway.amazonaws.com
-  #     SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${PnCoreAwsAccountId}:*/*/*/'
+  PreSignedUrlGeneratorLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref PreSignedUrlGeneratorLambda
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${PnCoreAwsAccountId}:*/*/*/'
 
   # #########################################################
   # ###              EventUpdateReceiver                  ###
   # #########################################################
   # # Lambda function
-  # EventUpdateReceiverLambda:
-  #   Type: AWS::Lambda::Function
-  #   Properties:
-  #     FunctionName: !Ref EventUpdateReceiverLambdaName
-  #     Runtime: nodejs18.x
-  #     Handler: "index.handler"
-  #     Code:
-  #       S3Bucket: !Ref LambdasBucketName
-  #       S3Key: !Sub "${BucketBasePath}/eventUpdateReceiver.zip"
-  #     Role: !GetAtt EventUpdateReceiverLambdaRole.Arn
-  #     Environment:
-  #       Variables:
-  #         REGION: !Sub ${AWS::Region}
-  #         STREAM_ARN: !Ref LegalConservationUpdateKinesisStreamArn
-  #         STREAM_KEY_ARN: !Ref LegalConservationUpdateKinesisStreamKeyArn
-  #         DYNAMODB_TABLE: !Ref LegalConservationRequestDynamoTableName
-  #     TracingConfig:
-  #       Mode: Active
-  #     Layers:
-  #       - !Sub "arn:aws:lambda:${AWS::Region}:339249233099:layer:LambdaInsightsExtension:13"
-  #     Timeout: 10
+  EventUpdateReceiverLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Ref EventUpdateReceiverLambdaName
+      Runtime: nodejs18.x
+      Handler: "index.handler"
+      Code:
+        S3Bucket: !Ref LambdasBucketName
+        S3Key: !Sub "${BucketBasePath}/eventUpdateReceiver.zip"
+      Role: !GetAtt EventUpdateReceiverLambdaRole.Arn
+      Environment:
+        Variables:
+          REGION: !Sub ${AWS::Region}
+          STREAM_ARN: !Ref LegalConservationUpdateKinesisStreamArn
+          STREAM_KEY_ARN: !Ref LegalConservationUpdateKinesisStreamKeyArn
+          DYNAMODB_REQUEST_TABLE: !Ref LegalConservationRequestDynamoTableName
+          DYNAMODB_HISTORY_TABLE: !Ref LegalConservationRequestHistoryDynamoTableName
+      TracingConfig:
+        Mode: Active
+      Layers:
+        - !Sub "arn:aws:lambda:${AWS::Region}:339249233099:layer:LambdaInsightsExtension:13"
+      Timeout: 10
 
   # # Lambda function role
-  # EventUpdateReceiverLambdaRole:
-  #   Type: AWS::IAM::Role
-  #   Properties:
-  #     RoleName: !Sub ${EventUpdateReceiverLambdaName}Role
-  #     AssumeRolePolicyDocument:
-  #       Version: 2012-10-17
-  #       Statement:
-  #         - Effect: Allow
-  #           Principal:
-  #             Service:
-  #               - lambda.amazonaws.com
-  #           Action:
-  #             - sts:AssumeRole
-  #     ManagedPolicyArns:
-  #       - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+  EventUpdateReceiverLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${EventUpdateReceiverLambdaName}Role
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
 
-  # EventUpdateReceiverLambdaRolePolicy:
-  #   Type: AWS::IAM::Policy
-  #   Properties:
-  #     PolicyName: !Sub ${EventUpdateReceiverLambdaName}RolePolicy
-  #     Roles:
-  #       - !Ref EventUpdateReceiverLambdaRole
-  #     PolicyDocument:
-  #       Version: 2012-10-17
-  #       Statement:
-  #         - Sid: AllowLambdaToCreateLogs
-  #           Action:
-  #           - logs:CreateLogStream
-  #           - logs:PutLogEvents
-  #           Effect: Allow
-  #           Resource: "*"   
-  #         - Sid: PutEvents
-  #           Action:
-  #           - kinesis:PutRecords
-  #           - kinesis:PutRecord
-  #           Effect: Allow
-  #           Resource: !Ref CdcLegalConservationKinesisSourceStreamArn  
-  #         - Sid: Encrypt
-  #           Action:
-  #             - kms:Encrypt*
-  #             - kms:Decrypt*
-  #             - kms:ReEncrypt*
-  #             - kms:GenerateDataKey*
-  #             - kms:Describe*
-  #           Effect: Allow
-  #           Resource: !Ref CdcLegalConservationKinesisSourceStreamKeyArn               
+  EventUpdateReceiverLambdaRolePolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: !Sub ${EventUpdateReceiverLambdaName}RolePolicy
+      Roles:
+        - !Ref EventUpdateReceiverLambdaRole
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Sid: AllowLambdaToCreateLogs
+            Action:
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+            Effect: Allow
+            Resource: "*"   
+          - Sid: PutEvents
+            Action:
+            - kinesis:PutRecords
+            - kinesis:PutRecord
+            Effect: Allow
+            Resource: !Ref CdcLegalConservationKinesisSourceStreamArn  
+          - Sid: Encrypt
+            Action:
+              - kms:Encrypt*
+              - kms:Decrypt*
+              - kms:ReEncrypt*
+              - kms:GenerateDataKey*
+              - kms:Describe*
+            Effect: Allow
+            Resource: !Ref CdcLegalConservationKinesisSourceStreamKeyArn               
 
-  # EventUpdateReceiverLambdaAlarms:
-  #   Type: AWS::CloudFormation::Stack
-  #   Properties:
-  #     TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/lambda-alarms.yaml"
-  #     Parameters:
-  #       FunctionName: !Ref EventUpdateReceiverLambda
-  #       AlarmSNSTopicArn: !Ref AlarmSNSTopicArn
+  EventUpdateReceiverLambdaAlarms:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/lambda-alarms.yaml"
+      Parameters:
+        FunctionName: !Ref EventUpdateReceiverLambda
+        AlarmSNSTopicArn: !Ref AlarmSNSTopicArn
 
   # # Lambda access right
-  # EventUpdateReceiverLambdaPermission:
-  #   Type: AWS::Lambda::Permission
-  #   Properties:
-  #     FunctionName: !Ref EventUpdateReceiverLambda
-  #     Action: lambda:InvokeFunction
-  #     Principal: apigateway.amazonaws.com
-  #     SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${PnCoreAwsAccountId}:*/*/*/'
+  EventUpdateReceiverLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref EventUpdateReceiverLambda
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${PnCoreAwsAccountId}:*/*/*/'
 
   # Allow event bus rules to write to kinesis stream
   EventBusEnqueueRole:
@@ -493,7 +507,7 @@ Resources:
       EventPattern:
         detail-type: [ "SafeStorageOutcomeEvent" ]
         detail:
-          documentType: [ 'PN_LEGAL_FACTS', 'PN_DOWNTIME_LEGAL_FACTS', 'PN_EXTERNAL_LEGAL_FACTS', 'PN_LOGS_ARCHIVE_AUDIT5Y', 'PN_LOGS_ARCHIVE_AUDIT10Y' ]
+          documentType: [ 'PN_AAR', 'PN_LEGAL_FACTS', 'PN_DOWNTIME_LEGAL_FACTS', 'PN_EXTERNAL_LEGAL_FACTS', 'PN_LOGS_ARCHIVE_AUDIT5Y', 'PN_LOGS_ARCHIVE_AUDIT10Y' ]
       Targets: 
         - Id: !Sub '${ProjectName}-ConfinfoEventbus-SafeStore2LegalConservation'
           Arn: !Ref SafeStorageEventKinesisStreamArn
@@ -501,29 +515,29 @@ Resources:
             Arn: !Ref EventBusDeadLetterQueueArn
 
   # Dashboard
-  # MicroserviceDashboard:
-  #   Type: AWS::CloudFormation::Stack
-  #   Properties:
-  #     TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/microservice-cloudwatch-dashboard.yaml"
-  #     Parameters:
-  #       DashboardName: !Sub "${ProjectName}-cn"
-  #       DynamoDBTableNames: !Join
-  #         - ","
-  #         - - !Ref LegalConservationRequestDynamoTableName
-  #       LambdaArns: !Join
-  #         - ","
-  #         - - !GetAtt PreSignedUrlGeneratorLambda.Arn
-  #           - !GetAtt SafeStorageListenerLambda.Arn
-  #           - !GetAtt EventUpdateReceiverLambda.Arn
-  #       AlarmArns: !Join
-  #         - ","
-  #         - - !GetAtt PreSignedUrlGeneratorLambdaAlarms.Outputs.LambdaInvocationErrorLogsMetricAlarm
-  #           - !GetAtt SafeStorageListenerLambdaAlarms.Outputs.LambdaInvocationErrorLogsMetricAlarm
-  #           - !GetAtt EventUpdateReceiverLambdaAlarms.Outputs.LambdaInvocationErrorLogsMetricAlarm
-  #           - !Ref LegalConservationTrackerDLQAlarmARN
-  #           - !Ref SafeStorageListenerDLQAlarmARN
-  #       LogGroupsNames: !Join
-  #         - ","
-  #         - - !Sub /aws/lambda/${PreSignedUrlGeneratorLambda}
-  #           - !Sub /aws/lambda/${SafeStorageListenerLambda}
-  #           - !Sub /aws/lambda/${EventUpdateReceiverLambda}
+  MicroserviceDashboard:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/microservice-cloudwatch-dashboard.yaml"
+      Parameters:
+        DashboardName: !Sub "${ProjectName}-cn"
+        DynamoDBTableNames: !Join
+          - ","
+          - - !Ref LegalConservationRequestDynamoTableName
+        LambdaArns: !Join
+          - ","
+          - - !GetAtt PreSignedUrlGeneratorLambda.Arn
+            - !GetAtt SafeStorageListenerLambda.Arn
+            - !GetAtt EventUpdateReceiverLambda.Arn
+        AlarmArns: !Join
+          - ","
+          - - !GetAtt PreSignedUrlGeneratorLambdaAlarms.Outputs.LambdaInvocationErrorLogsMetricAlarm
+            - !GetAtt SafeStorageListenerLambdaAlarms.Outputs.LambdaInvocationErrorLogsMetricAlarm
+            - !GetAtt EventUpdateReceiverLambdaAlarms.Outputs.LambdaInvocationErrorLogsMetricAlarm
+            - !Ref LegalConservationTrackerDLQAlarmARN
+            - !Ref SafeStorageListenerDLQAlarmARN
+        LogGroupsNames: !Join
+          - ","
+          - - !Sub /aws/lambda/${PreSignedUrlGeneratorLambda}
+            - !Sub /aws/lambda/${SafeStorageListenerLambda}
+            - !Sub /aws/lambda/${EventUpdateReceiverLambda}
