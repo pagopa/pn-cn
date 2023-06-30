@@ -1,12 +1,32 @@
+const { putResponse } = require('./historyRepository')
+const { deleteTtl, refreshTtl } = require('./ttlRepository')
+const { putEventUpdate } = require('./kinesisClient')
+
+function isError(event){
+    return event.status!=='OK'
+}
+
+function isRetryError(event){
+    return false; // TODO: identify errorCodes that triggers a retry
+}
+
 exports.processEvent = async function(event){
+    const isErrorResponse = isError(event)
     // update history
-    
-    if(event.status==='OK'){
-        // delete ttl entity
-        
-        // putRecord on Kinesis
+    await putResponse(event, isErrorResponse)
+
+    if(isErrorResponse){
+        if(isRetryError(event)){
+            // refresh ttl to retry
+            await refreshTtl(event)
+        } else {
+            // delete ttl entity
+            await deleteTtl(event)
+        }
     } else {
-        // if retry required
-            // put ttl entity to reset timer
+        await deleteTtl(event)
+
+        // put Record into Kinesis
+        await putEventUpdate(event)
     }
 }
