@@ -438,7 +438,7 @@ Resources:
             - kinesis:PutRecords
             - kinesis:PutRecord
             Effect: Allow
-            Resource: !Ref CdcLegalConservationKinesisSourceStreamArn  
+            Resource: !Ref LegalConservationUpdateKinesisStreamArn  
           - Sid: UpdateTables
             Action:
             - dynamodb:PutItem
@@ -456,7 +456,7 @@ Resources:
               - kms:GenerateDataKey*
               - kms:Describe*
             Effect: Allow
-            Resource: !Ref CdcLegalConservationKinesisSourceStreamKeyArn               
+            Resource: !Ref LegalConservationUpdateKinesisStreamKeyArn               
 
   EventUpdateReceiverLambdaAlarms:
     Type: AWS::CloudFormation::Stack

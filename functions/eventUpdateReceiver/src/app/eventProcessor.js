@@ -10,7 +10,7 @@ function isRetryError(event){
     return false; // TODO: identify errorCodes that triggers a retry
 }
 
-exports.processEvent = async function(event){
+exports.processEventUpdate = async function(event){
     const isErrorResponse = isError(event)
     // update history
     await putResponse(event, isErrorResponse)
