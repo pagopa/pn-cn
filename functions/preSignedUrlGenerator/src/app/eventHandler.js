@@ -1,16 +1,15 @@
 const { getPresignedUrl } = require('./safeStorageClient')
-const { validateRequest, respondError, getFileKeyFromPath } = require('./requestHelper')
+const { validatePathAndMethod, respondError, getFileKeyFromPath } = require('./requestHelper')
 
 exports.handleEvent = async (event) => {
-    const isRequestValid = validateRequest(event)
-    if(!isRequestValid){
-        return respondError({ error: "Invalid request", status: 400}, 400, {})
-    }
-    
-    const fileKey = getFileKeyFromPath(event.path)
-    if(!fileKey){
-      return respondError({ error: "Missing fileKey", status: 400}, 400, {})
-    }
-    
-    return getPresignedUrl(fileKey)
+  if(!validatePathAndMethod(event)){
+    return respondError({ resultCode: '404.00', resultDescription: 'Not found', errorList: [] }, 404, {}) 
+  }
+
+  const fileKey = getFileKeyFromPath(event.path)
+  if(!fileKey){
+    return respondError({ resultCode: '400.00', resultDescription: 'Invalid request', errorList: ['Missing fileKey ']}, 400, {})
+  }
+  
+  return getPresignedUrl(fileKey)
 };

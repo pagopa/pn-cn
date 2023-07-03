@@ -1,11 +1,13 @@
-exports.validateRequest = function(event){
+exports.validatePathAndMethod = function(event){
     const { path, httpMethod } = event
     
+    const errors = []
+
     if(httpMethod==='GET' && path && path.indexOf('/cn/v1/files/')===0){
-        return true
+        errors.push('Invalid path')
     }
     
-    return false
+    return errors
 }
 
 exports.respondError = function(errorDetails, statusCode, headers){
