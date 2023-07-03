@@ -15,7 +15,7 @@ async function getResponseBody(response){
 
 exports.getPresignedUrl = async function(fileKey){
   
-  const url = process.env.SAFESTORAGE_BASE_URL+'/safe-storage/v1/files/'+fileKey
+  const url = process.env.SAFESTORAGE_BASE_URL+'/v1/files/'+fileKey
 
   const headers = {
     'x-pagopa-safestorage-cx-id': process.env.SAFESTORAGE_CLIENT_ID,

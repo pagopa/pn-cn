@@ -1,12 +1,7 @@
 const { ddbDocClient } = require("./ddbClient.js");
 const {
-  DeleteCommand,
   PutCommand,
-  GetCommand,
-  BatchGetCommand,
-  BatchWriteCommand,
 } = require("@aws-sdk/lib-dynamodb");
-const { twoNumbersFromIUN } = require("./utils");
 
 function makePartitionKey(event){
   return 'log##'+event.fileKey

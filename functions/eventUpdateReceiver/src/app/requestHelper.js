@@ -1,7 +1,7 @@
 exports.validateRequest = function(event){
     const { path, httpMethod, body } = event
     
-    if(httpMethod==='POST' && path && path=='/cn/v1/events' && body){
+    if(httpMethod==='POST' && path && path==='/cn/v1/events' && body){
         return true
     }
     

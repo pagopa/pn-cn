@@ -9,7 +9,7 @@ exports.putEventUpdate = async function(event){
         region: process.env.REGION,
     });
     
-    const buff = new Buffer(JSON.stringify(event));
+    const buff = new Buffer.from(JSON.stringify(event), 'utf-8');
     let base64data = buff.toString('base64');
 
     const input = { // PutRecordInput
