@@ -311,7 +311,7 @@ Resources:
       Environment:
         Variables:
           REGION: !Sub ${AWS::Region}
-          SAFESTORAGE_BASE_URL: !Sub http://${ApplicationLoadBalancerDomain}:8080/safestorage
+          SAFESTORAGE_BASE_URL: !Sub http://${ApplicationLoadBalancerDomain}:8080/safe-storage
           SAFESTORAGE_CLIENT_ID: !Ref SafeStorageClientId
       VpcConfig:
         SecurityGroupIds:
@@ -439,6 +439,15 @@ Resources:
             - kinesis:PutRecord
             Effect: Allow
             Resource: !Ref CdcLegalConservationKinesisSourceStreamArn  
+          - Sid: UpdateTables
+            Action:
+            - dynamodb:PutItem
+            - dynamodb:GetItem
+            - dynamodb:DeleteItem
+            Effect: Allow
+            Resource: 
+              - !Ref LegalConservationRequestDynamoTableArn
+              - !Ref LegalConservationRequestHistoryDynamoTableArn              
           - Sid: Encrypt
             Action:
               - kms:Encrypt*
