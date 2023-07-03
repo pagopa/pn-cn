@@ -42,11 +42,10 @@ exports.putResponse = async function(event, withError = false){
   };
 
   if(withError){
-    const errorResponseTimestampYearMonth = date.toISOString().substring(0, 7).replace('-', '')
+    const errorResponseTimestampYearMonth = responseTimestamp.toISOString().substring(0, 7).replace('-', '')
     params.Item.errorCode_errorResponseTimestampYearMonth = event.errorCode+'##'+errorResponseTimestampYearMonth
     params.Item.errorResponseTimestamp = responseTimestamp.toISOString()
     params.Item.errorResponseTimestampYearMonth = errorResponseTimestampYearMonth
-
   }
   await ddbDocClient.send(new PutCommand(params));
 }
