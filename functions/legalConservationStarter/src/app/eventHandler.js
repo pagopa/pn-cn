@@ -4,6 +4,10 @@ exports.handleEvent = async (event) => {
 
   console.log("event: ", event);
 
+  if(event.isFake){
+    await processEvents([event])
+  }
+  
   // basic return payload
   const payload = {
     batchItemFailures: [],
@@ -19,7 +23,7 @@ exports.handleEvent = async (event) => {
   const kinesisEvents = extractKinesisData(event);
   console.log(JSON.stringify(kinesisEvents))
 
-  const processSummary = await processEvents(kinesisEvents)
+/*  const processSummary = await processEvents(kinesisEvents)
 
   if (processSummary.errors.length > 0) {
     payload.batchItemFailures = persistSummary.errors.map((i) => {
@@ -28,7 +32,7 @@ exports.handleEvent = async (event) => {
   }
 
   console.log('batch itemFailure ', payload)
-  
+  */
   throw new Error("Not implemented")
 
   console.log(`Kinesis items to persist`, processedItems);
