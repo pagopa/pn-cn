@@ -19,6 +19,16 @@ exports.handleEvent = async (event) => {
   const kinesisEvents = extractKinesisData(event);
   console.log(JSON.stringify(kinesisEvents))
 
+  const processSummary = await processEvents(kinesisEvents)
+
+  if (processSummary.errors.length > 0) {
+    payload.batchItemFailures = persistSummary.errors.map((i) => {
+      return { itemIdentifier: i.kinesisSeqNumber }; 
+    });
+  }
+
+  console.log('batch itemFailure ', payload)
+  
   throw new Error("Not implemented")
 
   console.log(`Kinesis items to persist`, processedItems);

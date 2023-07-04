@@ -1,7 +1,7 @@
 {
   "Parameters" : {
     "SafeStorageClientId": "pn-cn",
-    "SecretName": "pn-cn-Secrets-3svUOh",
-    "ConservationServiceBaseUrl": "https://csost-test.comdataonline.it/c.sostapi"
+    "ConservationServiceBaseUrl": "https://csost-test.comdataonline.it/c.sostapi",
+    "RemoteConfigurationCode": ""
   }
 }

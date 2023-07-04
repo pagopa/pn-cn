@@ -134,7 +134,7 @@ Parameters:
   EnvType:
     Type: String
 
-  SecretName:
+  RemoteConfigurationCode:
     Type: String
 
 Conditions:
@@ -169,7 +169,7 @@ Resources:
           DYNAMODB_REQUEST_TABLE: !Sub "${LegalConservationRequestDynamoTableName}"
           DYNAMODB_HISTORY_TABLE: !Sub "${LegalConservationRequestHistoryDynamoTableName}"
           CONSERVATION_SERVICE_BASE_URL: !Ref ConservationServiceBaseUrl
-          SECRET_ARN: !Sub arn:${AWS::Partition}:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${SecretName}
+          REMOTE_CONFIGURATION_CODE: !Ref RemoteConfigurationCode
           SSM_PARAMETER_STORE_TIMEOUT_MILLIS: 5000
       Timeout: 180
 
@@ -213,7 +213,7 @@ Resources:
             Effect: Allow
             Action:
               - secretsmanager:GetSecretValue
-            Resource: !Sub arn:${AWS::Partition}:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${SecretName}
+            Resource: !Sub arn:${AWS::Partition}:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-CN-Secrets*
           - Sid: AllowLambdaToCreateLogs
             Action:
             - logs:CreateLogStream

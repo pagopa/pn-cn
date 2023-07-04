@@ -1,0 +1,30 @@
+[{
+    "kinesisSeqNumber": "49642144857492068094509135346009784419190878814615896114",
+    "awsRegion": "eu-south-1",
+    "eventID": "ffedda32-23a7-4cad-b370-9629adb605df",
+    "eventName": "INSERT",
+    "userIdentity": null,
+    "recordFormat": "application/json",
+    "tableName": "pn-legal-conservation-request",
+    "dynamodb": {
+        "ApproximateCreationDateTime": 1688463540444,
+        "Keys": {
+            "pk": {
+                "S": "pippo"
+            },
+            "sk": {
+                "S": "pluto"
+            }
+        },
+        "NewImage": {
+            "pk": {
+                "S": "pippo"
+            },
+            "sk": {
+                "S": "pluto"
+            }
+        },
+        "SizeBytes": 28
+    },
+    "eventSource": "aws:dynamodb"
+}]
