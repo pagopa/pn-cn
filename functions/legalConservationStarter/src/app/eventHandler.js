@@ -1,5 +1,5 @@
 const { extractKinesisData } = require('./kinesis')
-
+const { processEvents } = require('./eventProcessor')
 exports.handleEvent = async (event) => {
 
   console.log("event: ", event);

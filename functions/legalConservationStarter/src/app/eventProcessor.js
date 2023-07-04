@@ -153,13 +153,13 @@ function getMetadataFromDocumentClassId(documentClassId, event){
     S_AUTORE_CODICE: '15376371009',
     S_AUTORE_TIPO_SOGGETTO: 'PG',
     S_RISERVATO: true,
-    S_FORMATO: getFileExtension(event.detail.fileKey),
+    S_FORMATO: getFileExtension(event.detail.key),
     S_FIRMATO_DIGITALMENTE: false,
     S_MARCATO: getMarcatoByDocumentClassId(documentClassId),
     S_SIGILLATO_ELETTR: getSigillatoElettronicamenteByDocumentClassId(documentClassId),
     S_CONFORMITA: getConformitaByDocumentClassId(documentClassId),
     S_VERSIONE: 1,
-    PAGOPA_DOCUMENT_ID: event.detail.fileKey
+    PAGOPA_DOCUMENT_ID: event.detail.key
   }
 
   return metadata
@@ -169,7 +169,7 @@ function preparePayloadFromSafeStorageEvent(event){
   const documentDate = event.time
   const fileKey = event.detail.key
   const documentClassId = getDocumentClassId(event)
-  const metadata = getMetadataFromDocumentClassId(documentClassId)
+  const metadata = getMetadataFromDocumentClassId(documentClassId, event)
 
   const payload = {
     "documentClassId": documentClassId,
@@ -201,14 +201,14 @@ async function processSafeStorageEvent(event){
   if(res){
     const requestTimestamp = new Date()
 
-    console.debug('Put request '+event.detail.fileKey + ' ' + res.id)
-    await putRequest(event.detail.fileKey, res.id, payload, requestTimestamp)
+    console.debug('Put request '+event.detail.key + ' ' + res.id)
+    await putRequest(event.detail.key, res.id, payload, requestTimestamp)
 
-    console.debug('Put request TTL '+event.detail.fileKey + ' ' + res.id)
-    await putRequestTTL(event.detail.fileKey, res.id, requestTimestamp) // TODO transform in batchWriteCommand
+    console.debug('Put request TTL '+event.detail.key + ' ' + res.id)
+    await putRequestTTL(event.detail.key, res.id, requestTimestamp) // TODO transform in batchWriteCommand
 
-    console.debug('Put request history '+event.detail.fileKey + ' ' + res.id)
-    await putHistory(event.detail.fileKey, res.id, payload, requestTimestamp)
+    console.debug('Put request history '+event.detail.key + ' ' + res.id)
+    await putHistory(event.detail.key, res.id, payload, requestTimestamp)
 
   } else {
     throw new Error("Service error", event)

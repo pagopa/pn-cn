@@ -21,7 +21,7 @@ function decodePayload(b64Str) {
   return parsedJson;
 }
 
-exports.isCdcTtlRemovalEvent = function(event){
+function isCdcTtlRemovalEvent(event){
   return event &&
     event.eventName === "REMOVE" &&
     event.userIdentity !== null &&
@@ -29,9 +29,13 @@ exports.isCdcTtlRemovalEvent = function(event){
     event.userIdentity.principalId === "dynamodb.amazonaws.com"
 }
 
-exports.isSafeStorageEvent = function(event){
+exports.isCdcTtlRemovalEvent = isCdcTtlRemovalEvent
+
+function isSafeStorageEvent(event){
   return event && event['detail-type'] === 'SafeStorageOutcomeEvent'
 }
+
+exports.isSafeStorageEvent = isSafeStorageEvent
 
 // DELETE intead of INSERT ()
 function mustProcess(rec) {
