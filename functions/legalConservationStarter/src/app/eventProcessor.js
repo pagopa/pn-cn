@@ -142,10 +142,21 @@ function getConformitaByDocumentClassId(documentClassId){
   return mapping[documentClassId]
 }
 
+function getModalitaFormazioneByDocumentClassId(documentClassId){
+  const mapping = {
+    "1": "A",
+    "2": "B",
+    "3": "B",
+    "4": "A"
+  }
+
+  return mapping[documentClassId]
+}
+
 function getMetadataFromDocumentClassId(documentClassId, event){
 
   const metadata = {
-    S_MODALITA_FORMAZIONE: 'A',
+    S_MODALITA_FORMAZIONE: getModalitaFormazioneByDocumentClassId(documentClassId),
     S_TIPO_FLUSSO: 'I',
     S_AUTORE_NOMINATIVO: 'PagoPA S.p.A. / 5N2TR557',
     S_AUTORE_CODICE: '15376371009',
@@ -172,7 +183,7 @@ function preparePayloadFromSafeStorageEvent(event){
   const payload = {
     "documentClassId": documentClassId,
     "companyId": "1",
-    "signSignleDoc": true,
+    "signSingleDoc": false,
     "documentDate": documentDate,
     "metadata": metadata,
     "externalDocumentKey": fileKey,
