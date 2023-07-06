@@ -29,9 +29,7 @@ async function invokeService(payload){
 
   const secretAsJson = JSON.parse(secret)
   
-  console.log('secret as json ', secretAsJson)
-
-  return { id: "TEST_"+new Date().getTime()}
+//  return { id: "TEST_"+new Date().getTime()}
   const url = process.env.CONSERVATION_SERVICE_BASE_URL+'/api/v1/uploads/remote'
 
   const headers = {
@@ -51,19 +49,19 @@ async function invokeService(payload){
   console.debug('fetchOptions', fetchOptions)
   
   if (res.ok) {
-    const data = await response.json()   
+    const data = await res.json()   
     console.log('INGESTION_OK', {
       res: data,
       req: fetchOptions
     })
     return data
   } else {
-    const data = await response.json()   
+    const data = await res.json()   
     console.log('INGESTION_ERROR', {
       res: data,
       req: fetchOptions
     })
-    return null
+    return data
   }
 }
 
@@ -78,7 +76,7 @@ function isAttestazioneOpponibiliATerzi(event){
 }
 
 function isRicevutePEC(event){
-  return event.detail.documentType==='PN_EXTERNAL_LEGAL_FACTS' && event.detail.contentType==='application/xml'
+  return event.detail.documentType==='PN_EXTERNAL_LEGAL_FACTS' && event.detail.contentType==='application/xml' && event.detail.client_short_code!=='pn-cons-000'
 }
 
 function isRicevutePostalizzazione(event){
@@ -149,10 +147,10 @@ function getMetadataFromDocumentClassId(documentClassId, event){
   const metadata = {
     S_MODALITA_FORMAZIONE: 'A',
     S_TIPO_FLUSSO: 'I',
-    S_AUTORE_NOMINATIVO: 'PagoPA S.p.A.',
+    S_AUTORE_NOMINATIVO: 'PagoPA S.p.A. / 5N2TR557',
     S_AUTORE_CODICE: '15376371009',
-    S_AUTORE_TIPO_SOGGETTO: 'PG',
-    S_RISERVATO: true,
+    S_AUTORE_TIPO_SOGGETTO: 'PAI',
+    S_RISERVATO: false,
     S_FORMATO: getFileExtension(event.detail.key),
     S_FIRMATO_DIGITALMENTE: false,
     S_MARCATO: getMarcatoByDocumentClassId(documentClassId),
@@ -198,7 +196,7 @@ async function processSafeStorageEvent(event){
   const payload = preparePayloadFromSafeStorageEvent(event)
 
   const res = await invokeService(payload)
-  if(res){
+  if(res && res.id){
     const requestTimestamp = new Date()
 
     console.debug('Put request '+event.detail.key + ' ' + res.id)
@@ -210,6 +208,11 @@ async function processSafeStorageEvent(event){
     console.debug('Put request history '+event.detail.key + ' ' + res.id)
     await putHistory(event.detail.key, res.id, payload, requestTimestamp)
 
+  } else if(res && res.status==='E_UPLOAD_302') {
+    console.warn('File key already exists: '+event.detail.key, {
+      res: res,
+      payload: payload
+    })
   } else {
     throw new Error("Service error", event)
   }
