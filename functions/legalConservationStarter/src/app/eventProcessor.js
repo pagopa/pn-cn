@@ -191,6 +191,7 @@ function preparePayloadFromSafeStorageEvent(event){
       "remoteConfigurationCode": process.env.REMOTE_CONFIGURATION_CODE, 
       "fileName": fileKey,
       "contentType": event.detail.contentType,
+      "hashType": "SHA256",
       "hash": event.detail.checksum,
       "retrieveParameters": {
         "HTTP_FILE_KEY": fileKey

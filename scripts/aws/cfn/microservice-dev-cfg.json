@@ -1,7 +1,7 @@
 {
   "Parameters" : {
     "SafeStorageClientId": "pn-cn",
-    "ConservationServiceBaseUrl": "https://csost-test.comdataonline.it/c.sostapi",
+    "ConservationServiceBaseUrl": "https://conservazione-api-t-pagopa.comdata-pa.it/c.sostapi",
     "RemoteConfigurationCode": ""
   }
 }
