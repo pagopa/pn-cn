@@ -33,7 +33,8 @@ async function invokeService(payload){
   const url = process.env.CONSERVATION_SERVICE_BASE_URL+'/api/v1/uploads/remote'
 
   const headers = {
-    'x-api-key': secretAsJson.apiKey
+    'x-api-key': secretAsJson.apiKey,
+    'Content-Type': 'application/json'
   }  
   
   const fetchOptions = { 
@@ -111,10 +112,10 @@ function getFileExtension(fileKey){
 
 function getMarcatoByDocumentClassId(documentClassId){
   const mapping = {
-    "1": true,
-    "2": false,
-    "3": false,
-    "4": true
+    "1": "True",
+    "2": "False",
+    "3": "False",
+    "4": "True"
   }
 
   return mapping[documentClassId]
@@ -122,10 +123,10 @@ function getMarcatoByDocumentClassId(documentClassId){
 
 function getSigillatoElettronicamenteByDocumentClassId(documentClassId){
   const mapping = {
-    "1": true,
-    "2": false,
-    "3": true,
-    "4": true
+    "1": "True",
+    "2": "False",
+    "3": "True",
+    "4": "True"
   }
 
   return mapping[documentClassId]
@@ -133,10 +134,10 @@ function getSigillatoElettronicamenteByDocumentClassId(documentClassId){
 
 function getConformitaByDocumentClassId(documentClassId){
   const mapping = {
-    "1": false,
-    "2": false,
-    "3": true,
-    "4": false
+    "1": "False",
+    "2": "False",
+    "3": "True",
+    "4": "False"
   }
 
   return mapping[documentClassId]
@@ -161,13 +162,13 @@ function getMetadataFromDocumentClassId(documentClassId, event){
     S_AUTORE_NOMINATIVO: 'PagoPA S.p.A. / 5N2TR557',
     S_AUTORE_CODICE: '15376371009',
     S_AUTORE_TIPO_SOGGETTO: 'PAI',
-    S_RISERVATO: false,
+    S_RISERVATO: "False",
     S_FORMATO: getFileExtension(event.detail.key),
-    S_FIRMATO_DIGITALMENTE: false,
+    S_FIRMATO_DIGITALMENTE: "False",
     S_MARCATO: getMarcatoByDocumentClassId(documentClassId),
     S_SIGILLATO_ELETTR: getSigillatoElettronicamenteByDocumentClassId(documentClassId),
     S_CONFORMITA: getConformitaByDocumentClassId(documentClassId),
-    S_VERSIONE: 1,
+    S_VERSIONE: "1",
     PAGOPA_DOCUMENT_ID: event.detail.key
   }
 
