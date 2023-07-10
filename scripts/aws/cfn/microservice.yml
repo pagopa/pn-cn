@@ -138,9 +138,9 @@ Parameters:
     Type: String
 
 Conditions:
-  IsNotProd: !Not [ !Equals [ !Ref EnvType, 'prod' ]]
-  IsNotUat: !Not [ !Equals [ !Ref EnvType, 'uat' ]]
-  IsCNEnabled: !And [ !Condition IsNotProd, !Condition IsNotUat ]
+  IsDev: !Equals [ !Ref EnvType, 'dev' ]
+  IsTest: !Equals [ !Ref EnvType, 'test' ]
+  IsCNEnabled: !Or [ !Condition IsDev, !Condition IsTest ]
 
 Resources:
   #########################################################
