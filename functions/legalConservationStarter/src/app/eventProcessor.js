@@ -2,38 +2,12 @@ const { isCdcTtlRemovalEvent, isSafeStorageEvent } = require('./kinesis')
 const { putRequest, putRequestTTL } = require('./requestRepository')
 const { putHistory } = require('./historyRepository')
 
-async function getSecretFromStore(secretName) {
-    try {
-      const response = await fetch(
-        `http://localhost:2773/secretsmanager/get?secretId=${encodeURIComponent(
-            secretName
-        )}`,
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            "X-Aws-Parameters-Secrets-Token": process.env.AWS_SESSION_TOKEN,
-          },
-        }
-      );
-      
-      const data = await response.json()
-      return data.SecretString;
-    } catch (err) {
-      console.error("Error in get secret ", err);
-      throw new Error("Error in get secret "+secretName);
-    }
-}
-
-async function invokeService(payload){
-  const secret = await getSecretFromStore('pn-cn-Secrets')
-
-  const secretAsJson = JSON.parse(secret)
-  
+async function invokeService(payload, secrets){
 //  return { id: "TEST_"+new Date().getTime()}
   const url = process.env.CONSERVATION_SERVICE_BASE_URL+'/api/v1/uploads/remote'
 
   const headers = {
-    'x-api-key': secretAsJson.apiKey,
+    'x-api-key': secrets.apiKey,
     'Content-Type': 'application/json'
   }  
   
@@ -66,7 +40,7 @@ async function invokeService(payload){
   }
 }
 
-async function processCdcTTLRemovalEvent(event){
+async function processCdcTTLRemovalEvent(event, secrets){
   // get fileKey
 
   throw new Error("Not implemented")
@@ -205,10 +179,10 @@ function preparePayloadFromSafeStorageEvent(event){
   return payload;
 }
 
-async function processSafeStorageEvent(event){
+async function processSafeStorageEvent(event, secrets){
   const payload = preparePayloadFromSafeStorageEvent(event)
 
-  const res = await invokeService(payload)
+  const res = await invokeService(payload, secrets)
   if(res && res.id){
     const requestTimestamp = new Date()
 
@@ -216,12 +190,12 @@ async function processSafeStorageEvent(event){
     await putRequest(event.detail.key, res.id, payload, requestTimestamp)
 
     console.debug('Put request TTL '+event.detail.key + ' ' + res.id)
-    await putRequestTTL(event.detail.key, res.id, requestTimestamp) // TODO transform in batchWriteCommand
+    await putRequestTTL(event.detail.key, res.id, requestTimestamp) // TODO: transform in batchWriteCommand (https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/modules/_aws_sdk_util_dynamodb.html)
 
     console.debug('Put request history '+event.detail.key + ' ' + res.id)
     await putHistory(event.detail.key, res.id, payload, requestTimestamp)
 
-  } else if(res && res.status==='E_UPLOAD_302') {
+  } else if(res && res.code==='E_UPLOAD_302') {
     console.warn('File key already exists: '+event.detail.key, {
       res: res,
       payload: payload
@@ -231,17 +205,17 @@ async function processSafeStorageEvent(event){
   }
 }
 
-async function processEvent(event){
+async function processEvent(event, secrets){
     if(isCdcTtlRemovalEvent(event)){
-        await processCdcTTLRemovalEvent(event)
+        await processCdcTTLRemovalEvent(event, secrets)
     } else if(isSafeStorageEvent(event)) {
-        await processSafeStorageEvent(event)
+        await processSafeStorageEvent(event, secrets)
     } else {
         console.warn('Undetected event type', event)
     }
 }
 
-exports.processEvents = async function(events){
+exports.processEvents = async function(events, secrets){
     const summary = {
         errors: [],
         ok: []
@@ -249,7 +223,7 @@ exports.processEvents = async function(events){
 
     for(let i=0; i<events.length; i++){ // TODO: create a concurrency pool, we can't run it sequentially in production... :/
         try {
-            await processEvent(events[i])
+            await processEvent(events[i], secrets)
             summary.ok.push(events[i].kinesisSeqNumber)
         } catch(e){
             console.error(e)
