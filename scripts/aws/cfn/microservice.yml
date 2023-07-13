@@ -154,6 +154,7 @@ Resources:
       FunctionName: !Ref SafeStorageListenerLambdaName
       Runtime: nodejs18.x
       Handler: "index.handler"
+      ReservedConcurrentExecutions: 10
       Code:
         S3Bucket: !Ref LambdasBucketName
         S3Key: !Sub "${BucketBasePath}/legalConservationStarter.zip"
