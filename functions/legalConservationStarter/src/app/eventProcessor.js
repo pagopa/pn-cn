@@ -55,7 +55,7 @@ function isRicevutePEC(event){
 }
 
 function isRicevutePostalizzazione(event){
-  return event.detail.documentType==='PN_EXTERNAL_LEGAL_FACTS' && event.detail.contentType!=='application/xml'
+  return event.detail.documentType==='PN_EXTERNAL_LEGAL_FACTS' && event.detail.contentType==='application/pdf'
 }
 
 function isLog(event){
@@ -78,6 +78,8 @@ function getDocumentClassId(event){
   if(isLog(event)){
     return "4"
   }
+
+  return null
 }
 
 function getFileExtension(fileKey){
@@ -182,6 +184,11 @@ function preparePayloadFromSafeStorageEvent(event){
 async function processSafeStorageEvent(event, secrets){
   const payload = preparePayloadFromSafeStorageEvent(event)
 
+  if(!payload.documentClassId){
+    console.info('Event skipped because of missing document class Id', event)
+    return
+  }
+
   const res = await invokeService(payload, secrets)
   if(res && res.id){
     const requestTimestamp = new Date()
@@ -221,7 +228,7 @@ exports.processEvents = async function(events, secrets){
         ok: []
     }
 
-    for(let i=0; i<events.length; i++){ // TODO: create a concurrency pool, we can't run it sequentially in production... :/
+    for(let i=0; i<events.length; i++){
         try {
             await processEvent(events[i], secrets)
             summary.ok.push(events[i].kinesisSeqNumber)
