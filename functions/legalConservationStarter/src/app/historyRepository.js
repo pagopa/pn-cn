@@ -8,7 +8,7 @@ function makePartitionKey(fileKey){
 }
 
 function makeSortKey(fileKey, externalId){
-  return 'log##'+fileKey+externalId
+  return 'log##'+fileKey+'##'+externalId
 }
 
 exports.putHistory = async function(fileKey, externalId, metadata, requestTimestamp){
