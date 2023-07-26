@@ -67,7 +67,7 @@ exports.updateRequest = async function(fileKey, externalId, requestTimestamp){
       ":externalId": externalId,
       ":requestTimestamp": requestTimestamp.toISOString()
     },
-    UpdateExpression: '#externalId = :externalId, #requestTimestamp = :requestTimestamp',
+    UpdateExpression: 'SET externalId = :externalId, requestTimestamp = :requestTimestamp',
     ReturnValues: "NONE",
   };
 
@@ -75,7 +75,7 @@ exports.updateRequest = async function(fileKey, externalId, requestTimestamp){
 }
 
 exports.getRequest = async function(fileKey){
-  const partitionKey = makeRequestTtlPartitionKey(fileKey)
+  const partitionKey = makeRequestPartitionKey(fileKey)
   const params = {
     TableName: process.env.DYNAMODB_REQUEST_TABLE,
     Key: {

@@ -1,5 +1,5 @@
 const { isCdcTtlRemovalEvent, isSafeStorageEvent } = require('./kinesis')
-const { putRequest, putRequestTTL, getRequest, getRequest } = require('./requestRepository')
+const { putRequest, putRequestTTL, getRequest, updateRequest } = require('./requestRepository')
 const { putHistory } = require('./historyRepository')
 const { ingestDocument } = require('./csostClient')
 const { preparePayloadFromSafeStorageEvent } = require('./metadataPreparator')
@@ -23,32 +23,32 @@ async function processCdcTTLRemovalEvent(event, secrets){
   }
 
   // get existing metadata (getItem from pn-legalconservation-requests table)
-  const requestItem = getRequest(fileKey)
+  const requestItem = await getRequest(fileKey)
   if(!requestItem || !requestItem.Item){
     console.warn('Request item not found for file key '+fileKey)
     return
   }
 
-  const payload = requestItem.metadata
+  const payload = requestItem.Item.metadata
   // use the same request to payload to invoke cSOST servie
   const res = await ingestDocument(payload, secrets)
 
   if(res && res.id){
     const requestTimestamp = new Date()
 
-    console.debug('Put request '+event.detail.key + ' ' + res.id)
+    console.debug('Put request '+fileKey + ' ' + res.id)
     // update pn-legalconservation-requests (req and sla) with external_id and timestamp
-    await updateRequest(event.detail.key, res.id, requestTimestamp)
+    await updateRequest(fileKey, res.id, requestTimestamp)
 
-    console.debug('Put request TTL '+event.detail.key + ' ' + res.id)
-    await putRequestTTL(event.detail.key, res.id, requestTimestamp) // TODO: transform in batchWriteCommand (https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/modules/_aws_sdk_util_dynamodb.html)
+    console.debug('Put request TTL '+fileKey + ' ' + res.id)
+    await putRequestTTL(fileKey, res.id, requestTimestamp) // TODO: transform in batchWriteCommand (https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/modules/_aws_sdk_util_dynamodb.html)
 
     // put item in pn-legalconservation-requests-history
-    console.debug('Put request history '+event.detail.key + ' ' + res.id)
-    await putHistory(event.detail.key, res.id, payload, requestTimestamp)
+    console.debug('Put request history '+fileKey + ' ' + res.id)
+    await putHistory(fileKey, res.id, payload, requestTimestamp)
 
   } else if(res && res.code==='E_UPLOAD_302') {
-    console.warn('File key already exists: '+event.detail.key, {
+    console.warn('File key already exists: '+fileKey, {
       res: res,
       payload: payload
     })
