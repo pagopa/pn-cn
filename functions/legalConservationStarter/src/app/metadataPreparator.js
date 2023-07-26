@@ -1,0 +1,137 @@
+function isAttestazioneOpponibiliATerzi(event){
+    return ['PN_LEGAL_FACTS', 'PN_AAR', 'PN_DOWNTIME_LEGAL_FACTS'].indexOf(event.detail.documentType)>=0
+  }
+  
+  function isRicevutePEC(event){
+    return event.detail.documentType==='PN_EXTERNAL_LEGAL_FACTS' 
+            && event.detail.contentType==='application/xml' 
+            && event.detail.client_short_code!=='pn-cons-000'
+  }
+  
+  function isRicevutePostalizzazione(event){
+    return event.detail.documentType==='PN_EXTERNAL_LEGAL_FACTS' && event.detail.contentType==='application/pdf'
+  }
+  
+  function isLog(event){
+    return ['PN_LOGS_ARCHIVE_AUDIT5Y', 'PN_LOGS_ARCHIVE_AUDIT10Y'].indexOf(event.detail.documentType)>=0
+  }
+  
+  function getDocumentClassId(event){
+    if(isAttestazioneOpponibiliATerzi(event)){
+      return "1"
+    } 
+  
+    if(isRicevutePEC(event)){
+      return "2"
+    }
+  
+    if(isRicevutePostalizzazione(event)){
+      return "3"
+    }
+  
+    if(isLog(event)){
+      return "4"
+    }
+  
+    return null
+  }
+  
+  function getFileExtension(fileKey){
+    return fileKey.split('.').pop();
+  }
+  
+  function getMarcatoByDocumentClassId(documentClassId){
+    const mapping = {
+      "1": "True",
+      "2": "False",
+      "3": "False",
+      "4": "True"
+    }
+  
+    return mapping[documentClassId]
+  }
+  
+  function getSigillatoElettronicamenteByDocumentClassId(documentClassId){
+    const mapping = {
+      "1": "True",
+      "2": "False",
+      "3": "True",
+      "4": "True"
+    }
+  
+    return mapping[documentClassId]
+  }
+  
+  function getConformitaByDocumentClassId(documentClassId){
+    const mapping = {
+      "1": "False",
+      "2": "False",
+      "3": "True",
+      "4": "False"
+    }
+  
+    return mapping[documentClassId]
+  }
+  
+  function getModalitaFormazioneByDocumentClassId(documentClassId){
+    const mapping = {
+      "1": "A",
+      "2": "B",
+      "3": "B",
+      "4": "A"
+    }
+  
+    return mapping[documentClassId]
+  }
+  
+  function getMetadataFromDocumentClassId(documentClassId, event){
+  
+    const metadata = {
+      S_MODALITA_FORMAZIONE: getModalitaFormazioneByDocumentClassId(documentClassId),
+      S_TIPO_FLUSSO: 'I',
+      S_AUTORE_NOMINATIVO: 'PagoPA S.p.A. / 5N2TR557',
+      S_AUTORE_CODICE: '15376371009',
+      S_AUTORE_TIPO_SOGGETTO: 'PAI',
+      S_RISERVATO: "False",
+      S_FORMATO: getFileExtension(event.detail.key),
+      S_FIRMATO_DIGITALMENTE: "False",
+      S_MARCATO: getMarcatoByDocumentClassId(documentClassId),
+      S_SIGILLATO_ELETTR: getSigillatoElettronicamenteByDocumentClassId(documentClassId),
+      S_CONFORMITA: getConformitaByDocumentClassId(documentClassId),
+      S_VERSIONE: "1",
+      PAGOPA_DOCUMENT_ID: event.detail.key
+    }
+  
+    return metadata
+  }
+  
+  exports.preparePayloadFromSafeStorageEvent = function(event){
+    const documentDate = event.time
+    const fileKey = event.detail.key
+    const documentClassId = getDocumentClassId(event)
+    const metadata = getMetadataFromDocumentClassId(documentClassId, event)
+  
+    const payload = {
+      "documentClassId": documentClassId,
+      "companyId": "1",
+      "signSingleDoc": false,
+      "documentDate": documentDate,
+      "metadata": metadata,
+      "externalDocumentKey": fileKey,
+      "remoteFileInfo": {
+        "remoteConfigurationCode": process.env.REMOTE_CONFIGURATION_CODE, 
+        "fileName": fileKey,
+        "contentType": event.detail.contentType,
+        "hashType": "SHA256",
+        "hash": event.detail.checksum,
+        "retrieveParameters": {
+          "HTTP_FILE_KEY": fileKey
+        },
+        "notificationParameters": {
+          "HTTP_FILE_KEY": fileKey
+        }
+      }
+    }
+    return payload;
+  }
+  

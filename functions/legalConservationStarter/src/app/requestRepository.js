@@ -2,6 +2,7 @@ const { ddbDocClient } = require("./ddbClient.js");
 const {
   PutCommand,
   GetCommand,
+  UpdateCommand
 } = require("@aws-sdk/lib-dynamodb");
 
 function makeRequestTtlPartitionKey(fileKey){
@@ -52,4 +53,35 @@ exports.putRequestTTL = async function(fileKey, externalId, requestTimestamp){
     }
   };
   await ddbDocClient.send(new PutCommand(params));
+}
+
+exports.updateRequest = async function(fileKey, externalId, requestTimestamp){
+  const partitionKey = makeRequestPartitionKey(fileKey)
+  const params = {
+    TableName: process.env.DYNAMODB_REQUEST_TABLE,
+    Key: {
+      pk:  partitionKey,
+      sk: partitionKey
+    },
+    ExpressionAttributeValues: {
+      ":externalId": externalId,
+      ":requestTimestamp": requestTimestamp.toISOString()
+    },
+    UpdateExpression: '#externalId = :externalId, #requestTimestamp = :requestTimestamp',
+    ReturnValues: "NONE",
+  };
+
+  await ddbDocClient.send(new UpdateCommand(params));
+}
+
+exports.getRequest = async function(fileKey){
+  const partitionKey = makeRequestTtlPartitionKey(fileKey)
+  const params = {
+    TableName: process.env.DYNAMODB_REQUEST_TABLE,
+    Key: {
+      pk: partitionKey,
+      sk: partitionKey
+    }
+  };
+  return await ddbDocClient.send(new GetCommand(params));
 }
