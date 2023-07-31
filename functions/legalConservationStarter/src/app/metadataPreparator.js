@@ -40,7 +40,9 @@ function isAttestazioneOpponibiliATerzi(event){
     return fileKey.split('.').pop();
   }
   
-  function getMarcatoByDocumentClassId(documentClassId){
+  function getMarcatoByDocumentClassId(documentClassId, documentType){
+    if(documentType==='PN_AAR') return "False"
+
     const mapping = {
       "1": "True",
       "2": "False",
@@ -51,7 +53,9 @@ function isAttestazioneOpponibiliATerzi(event){
     return mapping[documentClassId]
   }
   
-  function getSigillatoElettronicamenteByDocumentClassId(documentClassId){
+  function getSigillatoElettronicamenteByDocumentClassId(documentClassId, documentType){
+    if(documentType==='PN_AAR') return "False"
+
     const mapping = {
       "1": "True",
       "2": "False",
@@ -95,8 +99,8 @@ function isAttestazioneOpponibiliATerzi(event){
       S_RISERVATO: "False",
       S_FORMATO: getFileExtension(event.detail.key),
       S_FIRMATO_DIGITALMENTE: "False",
-      S_MARCATO: getMarcatoByDocumentClassId(documentClassId),
-      S_SIGILLATO_ELETTR: getSigillatoElettronicamenteByDocumentClassId(documentClassId),
+      S_MARCATO: getMarcatoByDocumentClassId(documentClassId, event.detail.documentType),
+      S_SIGILLATO_ELETTR: getSigillatoElettronicamenteByDocumentClassId(documentClassId, event.detail.documentType),
       S_CONFORMITA: getConformitaByDocumentClassId(documentClassId),
       S_VERSIONE: "1",
       PAGOPA_DOCUMENT_ID: event.detail.key
