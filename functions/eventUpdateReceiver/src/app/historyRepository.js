@@ -23,7 +23,7 @@ exports.putResponse = async function(event, withError = false){
   const nextTtlTs = nextTtl.getTime()
 
   const responseTimestamp = new Date()
-  const attributesToUpdate = ['entityName_externalId', 'fileKey', 'externalId', 
+  const attributesToUpdate = ['entityName_externalId', 'sk_entityName_externalId', 'fileKey', 'externalId', 
                               'delete_TTL', 'ttlExpirationTimestamp', 'responseTimestamp', 
                               'statusDate', 'status', 'rawResponse']
 
@@ -35,6 +35,7 @@ exports.putResponse = async function(event, withError = false){
     },
     ExpressionAttributeValues: {
       ":entityName_externalId": 'log##'+event.externalId,
+      ":sk_entityName_externalId": 'log##'+event.externalId,
       ":fileKey": event.fileKey,
       ":externalId": event.externalId,
       ":delete_TTL": Math.floor(nextTtlTs / 1000),

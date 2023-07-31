@@ -18,6 +18,7 @@ exports.putHistory = async function(fileKey, externalId, metadata, requestTimest
       pk:  makePartitionKey(fileKey),
       sk: makeSortKey(fileKey, externalId),
       entityName_externalId: 'log##'+externalId,
+      sk_entityName_externalId: 'log##'+externalId,
       fileKey: fileKey,
       externalId: externalId,
       requestTimestamp: requestTimestamp.toISOString(),
