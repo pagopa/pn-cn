@@ -20,21 +20,19 @@ async function ingestDocument(payload, secrets){
       
       console.debug('fetchOptions', fetchOptions)
       
+      const data = await res.json()   
       if (res.ok) {
-        const data = await res.json()   
         console.log('INGESTION_OK', {
           res: data,
           req: fetchOptions
         })
-        return data
       } else {
-        const data = await res.json()   
         console.warn('INGESTION_ERROR', {
           res: data,
           req: fetchOptions
         })
-        return data
       }
+      return data
     }
 
     exports.ingestDocument = ingestDocument
