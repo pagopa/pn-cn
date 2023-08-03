@@ -1,4 +1,4 @@
-
+// HTTP client for CSOST service (the legal conservation service)
 async function ingestDocument(payload, secrets){
     //  return { id: "TEST_"+new Date().getTime()}
       const url = process.env.CONSERVATION_SERVICE_BASE_URL+'/api/v1/uploads/remote'
