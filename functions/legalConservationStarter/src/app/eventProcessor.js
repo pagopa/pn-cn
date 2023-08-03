@@ -4,11 +4,14 @@ const { putHistory } = require('./historyRepository')
 const { ingestDocument } = require('./csostClient')
 const { preparePayloadFromSafeStorageEvent } = require('./metadataPreparator')
 
+const PARTITION_KEY_PREFIX = 'sla##'
+const PARTITION_KEY_PREFIX_LENGTH = PARTITION_KEY_PREFIX.length
+
 function getFileKeyFromCdcEvent(event){
   const pk = event.dynamodb.OldImage.pk.S
   
-  if(pk.indexOf('sla##')===0){
-    return pk.substr(5)
+  if(pk.indexOf(PARTITION_KEY_PREFIX)===0){
+    return pk.substr(PARTITION_KEY_PREFIX_LENGTH)
   }
 
   return null
