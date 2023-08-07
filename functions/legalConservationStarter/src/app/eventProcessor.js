@@ -1,6 +1,6 @@
 const { isCdcTtlRemovalEvent, isSafeStorageEvent } = require('./kinesis')
-const { putRequest, putRequestTTL, getRequest, updateRequest } = require('./requestRepository')
-const { putHistory } = require('./historyRepository')
+
+const { historyRepository, requestRepository, ttlRepository } = require('legal-conservation-commons')
 const { ingestDocument } = require('./csostClient')
 const { preparePayloadFromSafeStorageEvent } = require('./metadataPreparator')
 
@@ -26,7 +26,7 @@ async function processCdcTTLRemovalEvent(event, secrets){
   }
 
   // get existing metadata (getItem from pn-legalconservation-requests table)
-  const requestItem = await getRequest(fileKey)
+  const requestItem = await requestRepository.getRequest(fileKey)
   if(!requestItem || !requestItem.Item){
     console.warn('Request item not found for file key '+fileKey)
     return
@@ -41,14 +41,14 @@ async function processCdcTTLRemovalEvent(event, secrets){
 
     console.debug('Put request '+fileKey + ' ' + res.id)
     // update pn-legalconservation-requests (req and sla) with external_id and timestamp
-    await updateRequest(fileKey, res.id, requestTimestamp)
+    await requestRepository.updateRequest(fileKey, res.id, requestTimestamp)
 
     console.debug('Put request TTL '+fileKey + ' ' + res.id)
-    await putRequestTTL(fileKey, res.id, requestTimestamp) // TODO: transform in batchWriteCommand (https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/modules/_aws_sdk_util_dynamodb.html)
+    await ttlRepository.putRequestTTL(fileKey, res.id, requestTimestamp)
 
     // put item in pn-legalconservation-requests-history
     console.debug('Put request history '+fileKey + ' ' + res.id)
-    await putHistory(fileKey, res.id, payload, requestTimestamp)
+    await historyRepository.putHistoryItem(fileKey, res.id, payload, requestTimestamp)
 
   } else if(res && res.code==='E_UPLOAD_302') {
     console.warn('File key already exists: '+fileKey, {
@@ -74,13 +74,13 @@ async function processSafeStorageEvent(event, secrets){
     const requestTimestamp = new Date()
 
     console.debug('Put request '+event.detail.key + ' ' + res.id)
-    await putRequest(event.detail.key, res.id, payload, requestTimestamp)
+    await requestRepository.putRequest(event.detail.key, res.id, payload, requestTimestamp)
 
     console.debug('Put request TTL '+event.detail.key + ' ' + res.id)
-    await putRequestTTL(event.detail.key, res.id, requestTimestamp) // TODO: transform in batchWriteCommand (https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/modules/_aws_sdk_util_dynamodb.html)
+    await ttlRepository.putRequestTTL(event.detail.key, res.id, requestTimestamp) // TODO: transform in batchWriteCommand (https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/modules/_aws_sdk_util_dynamodb.html)
 
     console.debug('Put request history '+event.detail.key + ' ' + res.id)
-    await putHistory(event.detail.key, res.id, payload, requestTimestamp)
+    await historyRepository.putHistoryItem(event.detail.key, res.id, payload, requestTimestamp)
 
   } else if(res && res.code==='E_UPLOAD_302') {
     console.warn('File key already exists: '+event.detail.key, {

@@ -35,26 +35,6 @@ exports.putRequest = async function(fileKey, externalId, metadata, requestTimest
   await ddbDocClient.send(new PutCommand(params));
 }
 
-
-exports.putRequestTTL = async function(fileKey, externalId, requestTimestamp){
-  const partitionKey = makeRequestTtlPartitionKey(fileKey)
-  const nextTtl = getNextTtl()
-  const nextTtlTs = nextTtl.getTime()
-  const params = {
-    TableName: process.env.DYNAMODB_REQUEST_TABLE,
-    Item: {
-      pk: partitionKey,
-      sk: partitionKey,
-      fileKey: fileKey,
-      externalId: externalId,
-      requestTimestamp: requestTimestamp.toISOString(),
-      sla_TTL: Math.floor(nextTtlTs / 1000),
-      ttlExpirationTimestamp: nextTtl.toISOString()
-    }
-  };
-  await ddbDocClient.send(new PutCommand(params));
-}
-
 exports.updateRequest = async function(fileKey, externalId, requestTimestamp){
   const partitionKey = makeRequestPartitionKey(fileKey)
   const params = {
