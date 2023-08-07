@@ -5,18 +5,8 @@ const {
   UpdateCommand
 } = require("@aws-sdk/lib-dynamodb");
 
-function makeRequestTtlPartitionKey(fileKey){
-  return 'sla##'+fileKey
-}
-
 function makeRequestPartitionKey(fileKey){
   return 'req##'+fileKey
-}
-
-function getNextTtl(){
-  const date = new Date()
-  date.setDate(date.getDate() + 1);
-  return date
 }
 
 exports.putRequest = async function(fileKey, externalId, metadata, requestTimestamp){

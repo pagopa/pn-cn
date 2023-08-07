@@ -33,7 +33,7 @@ exports.refreshRequestTTL = async function(event){
 }
 
 exports.deleteRequestTTL = async function(event){
-  const partitionKey = makePartitionKey(event)
+  const partitionKey = makePartitionKey(event.fileKey)
   const params = {
     TableName: process.env.DYNAMODB_REQUEST_TABLE,
     Key: {
