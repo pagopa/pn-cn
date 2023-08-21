@@ -1,6 +1,5 @@
-const { putResponse } = require('./historyRepository')
-const { deleteTtl, refreshTtl } = require('./ttlRepository')
 const { putEventUpdate } = require('./kinesisClient')
+const { historyRepository, ttlRepository } = require('legal-conservation-commons')
 
 function isError(event){
     return event.status!=='OK'
@@ -13,18 +12,18 @@ function isRetryError(event){
 exports.processEventUpdate = async function(event){
     const isErrorResponse = isError(event)
     // update history
-    await putResponse(event, isErrorResponse)
+    await historyRepository.updateHistoryItemWithResponse(event, isErrorResponse)
 
     if(isErrorResponse){
         if(isRetryError(event)){
             // refresh ttl to retry
-            await refreshTtl(event)
+            await ttlRepository.refreshRequestTTL(event)
         } else {
             // delete ttl entity
-            await deleteTtl(event)
+            await ttlRepository.deleteRequestTTL(event)
         }
     } else {
-        await deleteTtl(event)
+        await ttlRepository.deleteRequestTTL(event)
 
         // put Record into Kinesis
         await putEventUpdate(event)

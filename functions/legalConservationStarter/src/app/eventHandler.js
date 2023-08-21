@@ -37,7 +37,8 @@ exports.handleEvent = async (event) => {
 
   console.log('batch itemFailure ', payload)
   */
-  throw new Error("Not implemented")
+  // uncomment to enable csost service integration
+  throw new Error("Not implemented") // the error is thrown to disable integration with csost service
 
   return payload;
 };

@@ -1,14 +1,15 @@
 const { ddbDocClient } = require("./ddbClient.js");
 const {
-  UpdateCommand,
+  PutCommand,
+  UpdateCommand
 } = require("@aws-sdk/lib-dynamodb");
 
-function makePartitionKey(event){
-  return 'log##'+event.fileKey
+function makePartitionKey(fileKey){
+  return 'log##'+fileKey
 }
 
-function makeSortKey(event){
-  return 'log##'+event.fileKey+'##'+event.externalId
+function makeSortKey(fileKey, externalId){
+  return 'log##'+fileKey+'##'+externalId
 }
 
 function getNextTtl(withError = false){
@@ -18,23 +19,42 @@ function getNextTtl(withError = false){
   return date
 }
 
-exports.putResponse = async function(event, withError = false){
+exports.putHistoryItem = async function(fileKey, externalId, metadata, requestTimestamp){
+  const params = {
+    TableName: process.env.DYNAMODB_HISTORY_TABLE,
+    Item: {
+      pk:  makePartitionKey(fileKey),
+      sk: makeSortKey(fileKey, externalId),
+      entityName_externalId: 'log##'+externalId,
+      sk_entityName_externalId: 'log##'+externalId,
+      fileKey: fileKey,
+      externalId: externalId,
+      requestTimestamp: requestTimestamp.toISOString(),
+      metadata: metadata
+    }
+  };
+
+  await ddbDocClient.send(new PutCommand(params));
+}
+
+exports.updateHistoryItemWithResponse = async function(event, withError = false){
   const nextTtl = getNextTtl(withError)
   const nextTtlTs = nextTtl.getTime()
 
   const responseTimestamp = new Date()
-  const attributesToUpdate = ['entityName_externalId', 'fileKey', 'externalId', 
+  const attributesToUpdate = ['entityName_externalId', 'sk_entityName_externalId', 'fileKey', 'externalId', 
                               'delete_TTL', 'ttlExpirationTimestamp', 'responseTimestamp', 
                               'statusDate', 'status', 'rawResponse']
 
   const params = {
     TableName: process.env.DYNAMODB_HISTORY_TABLE,
     Key: {
-      pk:  makePartitionKey(event),
-      sk: makeSortKey(event)      
+      pk:  makePartitionKey(event.fileKey),
+      sk: makeSortKey(event.fileKey, event.externalId)      
     },
     ExpressionAttributeValues: {
       ":entityName_externalId": 'log##'+event.externalId,
+      ":sk_entityName_externalId": 'log##'+event.externalId,
       ":fileKey": event.fileKey,
       ":externalId": event.externalId,
       ":delete_TTL": Math.floor(nextTtlTs / 1000),

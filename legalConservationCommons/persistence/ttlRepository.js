@@ -1,15 +1,11 @@
 const { ddbDocClient } = require("./ddbClient.js");
 const {
+  DeleteCommand,
   PutCommand,
-  GetCommand,
 } = require("@aws-sdk/lib-dynamodb");
 
-function makeRequestTtlPartitionKey(fileKey){
+function makePartitionKey(fileKey){
   return 'sla##'+fileKey
-}
-
-function makeRequestPartitionKey(fileKey){
-  return 'req##'+fileKey
 }
 
 function getNextTtl(){
@@ -18,25 +14,39 @@ function getNextTtl(){
   return date
 }
 
-exports.putRequest = async function(fileKey, externalId, metadata, requestTimestamp){
-  const partitionKey = makeRequestPartitionKey(fileKey)
+exports.refreshRequestTTL = async function(event){
+  const partitionKey = makePartitionKey(event.fileKey)
+  const nextTtl = getNextTtl()
+  const nextTtlTs = nextTtl.getTime()
   const params = {
     TableName: process.env.DYNAMODB_REQUEST_TABLE,
     Item: {
       pk: partitionKey,
       sk: partitionKey,
-      fileKey: fileKey,
-      metadata: metadata,
-      externalId: externalId,
-      requestTimestamp: requestTimestamp.toISOString()
+      fileKey: event.fileKey,
+      externalId: event.externalId,
+      sla_TTL: Math.floor(nextTtlTs / 1000),
+      ttlExpirationTimestamp: nextTtl.toISOString()
     }
   };
   await ddbDocClient.send(new PutCommand(params));
 }
 
+exports.deleteRequestTTL = async function(event){
+  const partitionKey = makePartitionKey(event.fileKey)
+  const params = {
+    TableName: process.env.DYNAMODB_REQUEST_TABLE,
+    Key: {
+      pk: partitionKey,
+      sk: partitionKey
+    }
+  };
+
+  await ddbDocClient.send(new DeleteCommand(params));
+}
 
 exports.putRequestTTL = async function(fileKey, externalId, requestTimestamp){
-  const partitionKey = makeRequestTtlPartitionKey(fileKey)
+  const partitionKey = makePartitionKey(fileKey)
   const nextTtl = getNextTtl()
   const nextTtlTs = nextTtl.getTime()
   const params = {
