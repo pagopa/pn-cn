@@ -17,8 +17,10 @@ exports.handleEvent = async (event) => {
     batchItemFailures: [],
   };
 
-  let processedItems = [];
-
+  if(process.env.ENV_TYPE==='dev'){
+    // csost service integration disabled, waiting for mock
+    throw new Error("Not implemented") // the error is thrown to disable integration with csost service
+  }
 
   // "normal" Kinesis path
   console.log("*** Kinesis processing ***");
@@ -27,7 +29,7 @@ exports.handleEvent = async (event) => {
   const kinesisEvents = extractKinesisData(event);
   console.log(JSON.stringify(kinesisEvents))
 
-/*  const processSummary = await processEvents(kinesisEvents, secrets)
+  const processSummary = await processEvents(kinesisEvents, secrets)
 
   if (processSummary.errors.length > 0) {
     payload.batchItemFailures = persistSummary.errors.map((i) => {
@@ -36,9 +38,6 @@ exports.handleEvent = async (event) => {
   }
 
   console.log('batch itemFailure ', payload)
-  */
-  // uncomment to enable csost service integration
-  throw new Error("Not implemented") // the error is thrown to disable integration with csost service
 
   return payload;
 };
