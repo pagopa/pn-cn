@@ -46,7 +46,6 @@ Parameters:
     Type: String
     Description: Name of dynamodb table containing notifications metadata
 
-
   LegalConservationRequestHistoryDynamoTableArn:
     Type: String
     Description: ARN of dynamodb table containing notifications metadata
@@ -137,11 +136,18 @@ Parameters:
   RemoteConfigurationCode:
     Type: String
 
+  SafeStorageListenerReservedConcurrency:
+    Type: Number
+    Default: '10'
+
 Conditions:
+  
   IsDev: !Equals [ !Ref EnvType, 'dev' ]
   IsTest: !Equals [ !Ref EnvType, 'test' ]
+  IsProd: !Equals [ !Ref EnvType, 'prod' ]
+  #IsCNEnabled: !Or [ !Condition IsDev, !Condition IsTest, !Condition IsProd ]
   IsCNEnabled: !Or [ !Condition IsDev, !Condition IsTest ]
-
+  
 Resources:
   #########################################################
   ###             SafeStorageListener Lambda            ###
@@ -154,7 +160,7 @@ Resources:
       FunctionName: !Ref SafeStorageListenerLambdaName
       Runtime: nodejs18.x
       Handler: "index.handler"
-      ReservedConcurrentExecutions: 10
+      ReservedConcurrentExecutions: !Ref SafeStorageListenerReservedConcurrency
       Code:
         S3Bucket: !Ref LambdasBucketName
         S3Key: !Sub "${BucketBasePath}/legalConservationStarter.zip"
@@ -171,6 +177,7 @@ Resources:
           DYNAMODB_HISTORY_TABLE: !Sub "${LegalConservationRequestHistoryDynamoTableName}"
           CONSERVATION_SERVICE_BASE_URL: !Ref ConservationServiceBaseUrl
           REMOTE_CONFIGURATION_CODE: !Ref RemoteConfigurationCode
+          ENV_TYPE: !Ref EnvType
           SSM_PARAMETER_STORE_TIMEOUT_MILLIS: 5000
       Timeout: 180
 
