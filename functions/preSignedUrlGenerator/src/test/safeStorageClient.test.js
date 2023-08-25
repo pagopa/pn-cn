@@ -1,7 +1,7 @@
 const { expect } = require("chai");
 const { getResponseBody, getPresignedUrl } = require('../app/safeStorageClient.js')
 const mockServer = require("mockttp").getLocal();
-const mockResponse = require("../response.json");
+const mockResponse = require("./mockResponse.json");
 const port = 8080;
 process.env.SAFESTORAGE_BASE_URL = "http://localhost:8080"
 process.env.SAFESTORAGE_CLIENT_ID = "testing"
