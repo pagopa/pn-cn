@@ -20,7 +20,7 @@ exports.getPresignedUrl = async function(fileKey){
   const headers = {
     'x-pagopa-safestorage-cx-id': process.env.SAFESTORAGE_CLIENT_ID,
   }  
-  
+
   const fetchOptions = { 
     method: 'GET',
     headers: headers
