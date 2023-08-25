@@ -32,7 +32,7 @@ exports.handleEvent = async (event) => {
   const processSummary = await processEvents(kinesisEvents, secrets)
 
   if (processSummary.errors.length > 0) {
-    payload.batchItemFailures = persistSummary.errors.map((i) => {
+    payload.batchItemFailures = processSummary.errors.map((i) => {
       return { itemIdentifier: i.kinesisSeqNumber }; 
     });
   }
