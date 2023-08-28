@@ -14,8 +14,8 @@ describe('Lambda Handler', () => {
 
     describe('Lambda Handler', () => {
             it('should return OK status', async () => {
-            const event = createEvent('GET', '/cn/v1/files/pippo');
-            mockServer.forGet('/v1/files/pippo').thenReply(200, JSON.stringify(mockResponse))
+            const event = createEvent('GET', '/cn/v1/files/PN_EXTERNAL_LEGAL_FACTS-6eb2c20cfcb44e5f9779c3b4f1a81952.pdf');
+            mockServer.forGet('/v1/files/PN_EXTERNAL_LEGAL_FACTS-6eb2c20cfcb44e5f9779c3b4f1a81952.pdf').thenReply(200, JSON.stringify(mockResponse))
             const res = await handleEvent(event)
             expect(res).to.not.be.null;
             expect(res).to.not.be.undefined;
@@ -23,8 +23,8 @@ describe('Lambda Handler', () => {
         });
 
         it('should return 404 caused by POST in event', async () => {
-            const event = createEvent('POST', '/cn/v1/files/pippo');
-            mockServer.forGet('/v1/files/pippo').thenReply(200, JSON.stringify(mockResponse))
+            const event = createEvent('POST', '/cn/v1/files/PN_EXTERNAL_LEGAL_FACTS-6eb2c20cfcb44e5f9779c3b4f1a81952.pdf');
+            mockServer.forGet('/v1/files/PN_EXTERNAL_LEGAL_FACTS-6eb2c20cfcb44e5f9779c3b4f1a81952.pdf').thenReply(200, JSON.stringify(mockResponse))
             const res = await handleEvent(event)
             expect(res).to.not.be.null;
             expect(res).to.not.be.undefined;
@@ -33,7 +33,7 @@ describe('Lambda Handler', () => {
 
         it('should return 400 caused by FileKey void in path', async () => {
             const event = createEvent('GET', "/cn/v1/files/");
-            mockServer.forGet('/v1/files/pippo').thenReply(200, JSON.stringify(mockResponse))
+            mockServer.forGet('/v1/files/PN_EXTERNAL_LEGAL_FACTS-6eb2c20cfcb44e5f9779c3b4f1a81952.pdf').thenReply(200, JSON.stringify(mockResponse))
             const res = await handleEvent(event)
             expect(res).to.not.be.null;
             expect(res).to.not.be.undefined;
