@@ -58,7 +58,7 @@ function isAttestazioneOpponibiliATerzi(event){
 
     const mapping = {
       "1": "True",
-      "2": "False",
+      "2": "True",
       "3": "True",
       "4": "True"
     }
@@ -88,6 +88,28 @@ function isAttestazioneOpponibiliATerzi(event){
     return mapping[documentClassId]
   }
   
+  function getIndiceClassificazioneByDocumentClassId(documentClassId){
+    const mapping = {
+      "1": "9.1",
+      "2": "9.2",
+      "3": "9.3",
+      "4": "9.4"
+    }
+  
+    return mapping[documentClassId]
+  }
+
+  function getClassificazioneDscByDocumentClassId(documentClassId){
+    const mapping = {
+      "1": "Piattaforma Notifiche - Attestazioni opponibili a terzi",
+      "2": "Piattaforma Notifiche - Ricevute PEC",
+      "3": "Piattaforma Notifiche - Ricevute postalizzazione",
+      "4": "Piattaforma Notifiche - File di log"
+    }
+  
+    return mapping[documentClassId]
+  }
+
   function getMetadataFromDocumentClassId(documentClassId, event){
   
     const metadata = {
@@ -102,6 +124,8 @@ function isAttestazioneOpponibiliATerzi(event){
       S_MARCATO: getMarcatoByDocumentClassId(documentClassId, event.detail.documentType),
       S_SIGILLATO_ELETTR: getSigillatoElettronicamenteByDocumentClassId(documentClassId, event.detail.documentType),
       S_CONFORMITA: getConformitaByDocumentClassId(documentClassId),
+      S_INDICE_CLASSIFICAZIONE: getIndiceClassificazioneByDocumentClassId(documentClassId),
+      S_CLASSIFICAZIONE_DSC: getClassificazioneDscByDocumentClassId(documentClassId),
       S_VERSIONE: "1",
       PAGOPA_DOCUMENT_ID: event.detail.key
     }
