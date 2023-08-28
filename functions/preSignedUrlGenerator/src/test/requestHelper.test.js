@@ -48,8 +48,6 @@ describe('FileKey Testing', () => {
     it('Check if \'/cn/v1/files/\' has been removed from path', () => {
         const fileKey = 'PN_EXTERNAL_LEGAL_FACTS-6eb2c20cfcb44e5f9779c3b4f1a81952.pdf'
         const path = '/cn/v1/files/' + fileKey
-        expect(response.Items).to.not.be.null;
-        expect(response.Items).to.not.be.undefined;
         expect(getFileKeyFromPath(path)).to.equal(fileKey);
     });
 });
@@ -57,8 +55,8 @@ describe('FileKey Testing', () => {
 describe('Respond Error Testing', () => {
     it('Check if complete response contains StatusCode', () => {
         const response = respondError({ resultCode: '400.00', resultDescription: 'Invalid request', errorList: ['Missing fileKey ']}, 400, {})
-        expect(response.body).to.not.be.null;
-        expect(response.Items).to.not.be.undefined;
+        expect(response.statusCode).to.not.be.null;
+        expect(response.statusCode).to.not.be.undefined;
         expect(response.statusCode).to.equal(400);
     });
     it('Check if complete response contains Body', () => {
