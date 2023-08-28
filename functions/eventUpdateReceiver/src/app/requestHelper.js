@@ -1,33 +1,21 @@
 exports.validateRequest = function(event){
     const { path, httpMethod, body } = event
-    
     const errors = []
     if(httpMethod==='POST' && path && path==='/cn/v1/events' && body){
         return true
-        const jsonBody = JSON.parse(body)
-        if(jsonBody.events){}
     }
     
     errors.push('Invalid path/method')
     return errors
 }
 
-exports.respondError = function(errorDetails, statusCode, headers){
+exports.generateResponse = function(errorDetails, statusCode, headers){
     return {
         statusCode: statusCode,
         headers,
         body: JSON.stringify(errorDetails)
     }
 }
-
-exports.respondOk = function(data, statusCode, headers){
-    return {
-        statusCode: statusCode,
-        headers,
-        body: JSON.stringify(data)
-    }
-}
-
 
 exports.getEventsFromBody = function(body){
     const jsonBody = JSON.parse(body)
@@ -36,16 +24,16 @@ exports.getEventsFromBody = function(body){
 
 function validateEvent(event){
     const errors = []
-    if(!event.externalId){
+    if(!event.externalId && event.externalId === ''){
         errors.push('Missing "externalId"')
     }
 
-    if(!event.fileKey){
-        errors.push('Missing "externalId"')
+    if(!event.fileKey && event.fileKey === ''){
+        errors.push('Missing "fileKey"')
     }
 
-    if(!event.status){
-        errors.push('Missing "externalId"')
+    if(!event.status && event.status === ''){
+        errors.push('Missing "status"')
     }
 
     return errors
