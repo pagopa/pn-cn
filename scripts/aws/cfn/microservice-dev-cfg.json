@@ -1,7 +1,7 @@
 {
   "Parameters" : {
     "SafeStorageClientId": "pn-cn",
-    "ConservationServiceBaseUrl": "https://conservazione-api-t-pagopa.comdata-pa.it/c.sostapi",
+    "ConservationServiceBaseUrl": "http://internal-pn-re-Appli-17ZRKQ0S21KXS-1215481206.eu-south-1.elb.amazonaws.com:8080",
     "RemoteConfigurationCode": ""
   }
 }
