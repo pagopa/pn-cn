@@ -175,7 +175,7 @@ Resources:
         S3Bucket: !Ref LambdasBucketName
         S3Key: !Sub "${BucketBasePath}/legalConservationStarter.zip"
       Role: !GetAtt SafeStorageListenerLambdaRole.Arn
-      VpcConfig:
+      VpcConfig: # required for mock connection but useful also for the future addition of network firewall
         SecurityGroupIds:
           - !GetAtt SafeStorageListenerLambdaSecGroup.GroupId
         SubnetIds: !Ref VpcEgressSubnetsIds       
