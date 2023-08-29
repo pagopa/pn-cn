@@ -4,7 +4,7 @@ function isAttestazioneOpponibiliATerzi(event){
   
   function isRicevutePEC(event){
     return event.detail.documentType==='PN_EXTERNAL_LEGAL_FACTS' 
-            && event.detail.contentType==='message/rfc822' 
+            && (event.detail.contentType==='message/rfc822' || event.detail.contentType==='application/xml') 
             && event.detail.client_short_code!=='pn-cons-000'
   }
   
