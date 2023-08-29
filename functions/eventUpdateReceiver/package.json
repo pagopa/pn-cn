@@ -10,7 +10,9 @@
         "sonar": "node sonarqube-scanner.js -Dsonar.login=${SONAR_TOKEN}"
     },
     "devDependencies": {
+        "@aws-sdk/client-dynamodb": "^3.398.0",
         "@aws-sdk/client-kinesis": "^3.398.0",
+        "@aws-sdk/lib-dynamodb": "^3.398.0",
         "aws-sdk-client-mock": "^2.2.0",
         "chai": "^4.3.8",
         "eslint": "^8.23.1",
