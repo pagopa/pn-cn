@@ -14,9 +14,9 @@ describe('Request Helper Testing', () => {
         it('validateRequest returns True with correct event', () => {
             const event = createEvent('/cn/v1/events', 'POST', {})
             const res = validateRequest(event);
-            expect(validateRequest(event)).to.not.be.null;
-            expect(validateRequest(event)).to.not.be.undefined;
-            expect(validateRequest(event)).to.true;
+            expect(res).to.not.be.null;
+            expect(res).to.not.be.undefined;
+            expect(res).to.be.an("array").that.is.empty
         });
 
         it('validateRequest returns \'Invalid path/method\' if event path is invalid', () => {
@@ -59,7 +59,6 @@ describe('Request Helper Testing', () => {
             expect(response.headers).to.not.be.undefined;
             expect(response.headers).to.deep.equal({});
         });
-
 
         it('Check if generateResponse returns body', () => {
             const response = generateResponse({ resultCode: '400.00', resultDescription: 'Invalid request', errorList: ['Missing fileKey ']}, 400, {});

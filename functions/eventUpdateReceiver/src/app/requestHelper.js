@@ -2,7 +2,7 @@ exports.validateRequest = function(event){
     const { path, httpMethod, body } = event
     const errors = []
     if(httpMethod==='POST' && path && path==='/cn/v1/events' && body){
-        return true
+        return []
     }
     
     errors.push('Invalid path/method')
@@ -43,12 +43,10 @@ exports.validateEvents = function(body){
     const jsonBody = JSON.parse(body)
 
     const errors = []
-
     if(!jsonBody.events){
         errors.push('Missing "events" key')
         return errors
     }
-
     for(let i=0; i<jsonBody.events.length; i++){
         const eventErrors = validateEvent(jsonBody.events[i])
         if(eventErrors.length>0){

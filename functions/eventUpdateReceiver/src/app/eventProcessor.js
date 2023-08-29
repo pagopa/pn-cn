@@ -24,7 +24,6 @@ exports.processEventUpdate = async function(event){
         }
     } else {
         await ttlRepository.deleteRequestTTL(event)
-
         // put Record into Kinesis
         await putEventUpdate(event)
     }
