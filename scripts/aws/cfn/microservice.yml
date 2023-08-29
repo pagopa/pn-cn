@@ -78,6 +78,10 @@ Parameters:
     Type: CommaDelimitedList
     Description: 'subnets ids comma separated list. Where to deploy the microservice'
 
+  VpcEgressSubnetsIds:
+    Type: CommaDelimitedList
+    Description: VPC confinfo subnets with internet access
+
   ApplicationLoadBalancerDomain:
     Type: String
     Description: 'Base URL of the load balancer where the service is going to be reachable'
@@ -153,6 +157,12 @@ Resources:
   ###             SafeStorageListener Lambda            ###
   #########################################################
 
+  SafeStorageListenerLambdaSecGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: !Sub '${SafeStorageListenerLambdaName}-sec-group'
+      VpcId: !Ref VpcId
+
   #Lambda function
   SafeStorageListenerLambda:
     Type: AWS::Lambda::Function
@@ -165,6 +175,10 @@ Resources:
         S3Bucket: !Ref LambdasBucketName
         S3Key: !Sub "${BucketBasePath}/legalConservationStarter.zip"
       Role: !GetAtt SafeStorageListenerLambdaRole.Arn
+      VpcConfig: # required for mock connection but useful also for the future addition of network firewall
+        SecurityGroupIds:
+          - !GetAtt SafeStorageListenerLambdaSecGroup.GroupId
+        SubnetIds: !Ref VpcEgressSubnetsIds       
       TracingConfig:
         Mode: Active
       Layers:
@@ -196,6 +210,7 @@ Resources:
             Action:
               - sts:AssumeRole
       ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
         - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
       Path: /
 
