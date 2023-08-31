@@ -9,7 +9,8 @@ exports.handleEvent = async (event) => {
   const secrets = await getSecret('pn-cn-Secrets')
 
   if(event.isFake){
-    await processEvents([event], secrets)
+    const s = await processEvents([event], secrets)
+    console.log('fake summary', s)
   }
   
   // basic return payload
@@ -33,7 +34,7 @@ exports.handleEvent = async (event) => {
 
   if (processSummary.errors.length > 0) {
     payload.batchItemFailures = processSummary.errors.map((i) => {
-      return { itemIdentifier: i.kinesisSeqNumber }; 
+      return { itemIdentifier: i }; 
     });
   }
 
