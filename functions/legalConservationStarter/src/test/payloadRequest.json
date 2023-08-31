@@ -1,0 +1,21 @@
+{
+    "documentClassId": "01",
+    "companyId": "1",
+    "signSingleDoc": false,
+    "documentDate": "2023-06-28T07:38:12Z",
+    "metadata": {},
+    "externalDocumentKey": "PN_EXTERNAL_LEGAL_FACTS-56184aeb94d74c7093c99fb8ebfb2bb1.xml",
+    "remoteFileInfo": {
+        "remoteConfigurationCode": "configuration",
+        "fileName": "56184aeb94d74c7093c99fb8ebfb2bb1.xml",
+        "contentType": "application/xml",
+        "hashType": "SHA256",
+        "hash": "7ca0172850c53065046beeac3cdec3fe921532dbfebdf7efeb5c33d019cd7798",
+        "retrieveParameters": {
+            "HTTP_FILE_KEY": "PN_EXTERNAL_LEGAL_FACTS-56184aeb94d74c7093c99fb8ebfb2bb1.xml"
+        },
+        "notificationParameters": {
+            "HTTP_FILE_KEY": "PN_EXTERNAL_LEGAL_FACTS-56184aeb94d74c7093c99fb8ebfb2bb1.xml"
+        }
+    }
+}

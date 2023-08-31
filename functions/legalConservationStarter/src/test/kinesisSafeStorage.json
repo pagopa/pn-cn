@@ -1,4 +1,4 @@
-[{
+{
     "kinesisSeqNumber": "49642115848638112355480323782160580827394338152236711954",
     "version": "0",
     "id": "340f3708-f0cb-405a-13bf-96d2849994bf",
@@ -16,6 +16,6 @@
         "contentType": "application/xml",
         "checksum": "eUgOZ07/T98Dea7GBsLL3PFAvfd90MaZyBw3VqU4V6U=",
         "retentionUntil": "2033-06-30T07:38:06Z",
-        "client_short_code": "pn-cons-000"
+        "client_short_code": "pn-cons-001"
     }
-}]
+}

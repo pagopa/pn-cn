@@ -111,7 +111,7 @@ function isAttestazioneOpponibiliATerzi(event){
   }
 
   function getMetadataFromDocumentClassId(documentClassId, event){
-  
+
     const metadata = {
       S_MODALITA_FORMAZIONE: getModalitaFormazioneByDocumentClassId(documentClassId),
       S_TIPO_FLUSSO: 'I',

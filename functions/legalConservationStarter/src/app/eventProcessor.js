@@ -35,7 +35,6 @@ async function processCdcTTLRemovalEvent(event, secrets){
   const payload = requestItem.Item.metadata
   // use the same request to payload to invoke cSOST servie
   const res = await ingestDocument(payload, secrets)
-
   if(res && res.id){
     const requestTimestamp = new Date()
 
@@ -58,12 +57,10 @@ async function processCdcTTLRemovalEvent(event, secrets){
   } else {
     throw new Error("CSOST Service error", event)
   }
-  throw new Error("Not implemented")
 }
 
 async function processSafeStorageEvent(event, secrets){
   const payload = preparePayloadFromSafeStorageEvent(event)
-
   if(!payload.documentClassId){
     console.info('Event skipped because of missing document class Id', event)
     return
