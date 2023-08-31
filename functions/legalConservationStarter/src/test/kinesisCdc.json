@@ -1,16 +1,27 @@
-[{
+{
     "kinesisSeqNumber": "49642144857492068094509135346009784419190878814615896114",
     "awsRegion": "eu-south-1",
     "eventID": "ffedda32-23a7-4cad-b370-9629adb605df",
     "eventName": "REMOVE",
-    "userIdentity": null,
+    "userIdentity": {
+        "type": "Service",
+        "principalId": "dynamodb.amazonaws.com"
+    },
     "recordFormat": "application/json",
     "tableName": "pn-legal-conservation-request",
     "dynamodb": {
         "ApproximateCreationDateTime": 1688463540444,
         "Keys": {
             "pk": {
-                "S": "pippo"
+                "S": "req##PN_EXTERNAL_LEGAL_FACTS-56184aeb94d74c7093c99fb8ebfb2bc1.xml"
+            },
+            "sk": {
+                "S": "req##PN_EXTERNAL_LEGAL_FACTS-56184aeb94d74c7093c99fb8ebfb2bc1.xml"
+            }
+        },
+        "OldImage": {
+            "pk": {
+                "S": "sla##PN_EXTERNAL_LEGAL_FACTS-56184aeb94d74c7093c99fb8ebfb2bb1.xml"
             },
             "sk": {
                 "S": "pluto"
@@ -27,4 +38,4 @@
         "SizeBytes": 28
     },
     "eventSource": "aws:dynamodb"
-}]
+}

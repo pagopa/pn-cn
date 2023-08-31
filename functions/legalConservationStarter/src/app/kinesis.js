@@ -1,4 +1,3 @@
-/* istanbul ignore file */
 // copied from activityStepManager
 const { Buffer } = require("node:buffer");
 const { gunzipSync } = require("node:zlib");

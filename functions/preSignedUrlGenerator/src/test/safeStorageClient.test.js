@@ -23,7 +23,6 @@ describe('Prepare MockServer on port ' + port, () => {
             presignedurldemo = 'https://presignedurldemo.s3.eu-west-2.amazonaws.com/'
             mockServer.forGet('/v1/files/PN_EXTERNAL_LEGAL_FACTS-6eb2c20cfcb44e5f9779c3b4f1a81952.pdf').thenReply(404, "Not Found")
             const res = await getPresignedUrl('PN_EXTERNAL_LEGAL_FACTS-6eb2c20cfcb44e5f9779c3b4f1a81952.pdf');
-            console.lo
             expect(res.statusCode).to.be.equal(404)
         });
     });
