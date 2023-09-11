@@ -6,11 +6,27 @@ describe('Secret Manager Testing', () => {
 
     describe('metadataPreparator Test' , () => {
         it('generate Metadata for \"RicevutePEC\"', async () => {
+            let kinesisSafeStorageTemp = JSON.parse(JSON.stringify(kinesisSafeStorage))
+            kinesisSafeStorageTemp['detail'].documentType = "PN_EXTERNAL_LEGAL_FACTS"
+            kinesisSafeStorageTemp['detail'].key = "PN_EXTERNAL_LEGAL_FACTS-56184aeb94d74c7093c99fb8ebfb2bb1.eml"
+            kinesisSafeStorageTemp['detail'].contentType = "message/rfc822"
+            const res = await preparePayloadFromSafeStorageEvent(kinesisSafeStorageTemp);
+            expect(res.metadata["S_CLASSIFICAZIONE_DSC"]).to.not.be.null;
+            expect(res.metadata["S_CLASSIFICAZIONE_DSC"]).to.not.be.undefined;
+            expect(res.metadata["S_CLASSIFICAZIONE_DSC"]).to.equal("Piattaforma Notifiche - Ricevute PEC");
+            expect(res.metadata["S_SIGILLATO_ELETTR"]).to.equal("True");
+        });
+
+        it('generate Metadata for \"RicevutePEC\" OLD', async () => {
             const res = await preparePayloadFromSafeStorageEvent(kinesisSafeStorage);
             expect(res.metadata["S_CLASSIFICAZIONE_DSC"]).to.not.be.null;
             expect(res.metadata["S_CLASSIFICAZIONE_DSC"]).to.not.be.undefined;
             expect(res.metadata["S_CLASSIFICAZIONE_DSC"]).to.equal("Piattaforma Notifiche - Ricevute PEC");
+
+            expect(res.metadata["S_SIGILLATO_ELETTR"]).to.equal("False");
         });
+
+
         it('generate Metadata for \"AttestazioneOpponibiliATerzi\"', async () => {
             let kinesisSafeStorageTemp = JSON.parse(JSON.stringify(kinesisSafeStorage))
             kinesisSafeStorageTemp['detail'].documentType = "PN_AAR"

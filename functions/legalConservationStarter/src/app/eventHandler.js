@@ -18,11 +18,6 @@ exports.handleEvent = async (event) => {
     batchItemFailures: [],
   };
 
-  if(process.env.ENV_TYPE==='dev'){
-    // csost service integration disabled, waiting for mock
-    throw new Error("Not implemented") // the error is thrown to disable integration with csost service
-  }
-
   // "normal" Kinesis path
   console.log("*** Kinesis processing ***");
 

@@ -53,8 +53,13 @@ function isAttestazioneOpponibiliATerzi(event){
     return mapping[documentClassId]
   }
   
-  function getSigillatoElettronicamenteByDocumentClassId(documentClassId, documentType){
+  function getSigillatoElettronicamenteByDocumentClassId(documentClassId, documentType, fileKey){
     if(documentType==='PN_AAR') return "False"
+
+    // backward compatibility: PEC XML receipts are not signed electronically
+    if(documentClassId==='2' && getFileExtension(fileKey)==='xml'){
+      return "False"
+    } 
 
     const mapping = {
       "1": "True",
@@ -122,7 +127,7 @@ function isAttestazioneOpponibiliATerzi(event){
       S_FORMATO: getFileExtension(event.detail.key),
       S_FIRMATO_DIGITALMENTE: "False",
       S_MARCATO: getMarcatoByDocumentClassId(documentClassId, event.detail.documentType),
-      S_SIGILLATO_ELETTR: getSigillatoElettronicamenteByDocumentClassId(documentClassId, event.detail.documentType),
+      S_SIGILLATO_ELETTR: getSigillatoElettronicamenteByDocumentClassId(documentClassId, event.detail.documentType, event.detail.key),
       S_CONFORMITA: getConformitaByDocumentClassId(documentClassId),
       S_INDICE_CLASSIFICAZIONE: getIndiceClassificazioneByDocumentClassId(documentClassId),
       S_CLASSIFICAZIONE_DSC: getClassificazioneDscByDocumentClassId(documentClassId),
