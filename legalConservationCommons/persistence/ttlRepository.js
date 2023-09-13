@@ -4,13 +4,15 @@ const {
   PutCommand,
 } = require("@aws-sdk/lib-dynamodb");
 
+const ttlDurationInDays = 3;
+
 function makePartitionKey(fileKey){
   return 'sla##'+fileKey
 }
 
 function getNextTtl(){
   const date = new Date()
-  date.setDate(date.getDate() + 1);
+  date.setDate(date.getDate() + ttlDurationInDays);
   return date
 }
 
