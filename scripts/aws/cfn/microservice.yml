@@ -149,8 +149,7 @@ Conditions:
   IsDev: !Equals [ !Ref EnvType, 'dev' ]
   IsTest: !Equals [ !Ref EnvType, 'test' ]
   IsProd: !Equals [ !Ref EnvType, 'prod' ]
-  #IsCNEnabled: !Or [ !Condition IsDev, !Condition IsTest, !Condition IsProd ]
-  IsCNEnabled: !Or [ !Condition IsDev, !Condition IsTest ]
+  IsCNEnabled: !Or [ !Condition IsDev, !Condition IsTest, !Condition IsProd ]
   
 Resources:
   #########################################################
