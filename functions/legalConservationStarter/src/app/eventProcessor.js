@@ -17,13 +17,31 @@ function getFileKeyFromCdcEvent(event){
   return null
 }
 
-async function processError302(requestItem, event){
+function getStringValueFromCdcEvent(event, fieldName){
+  if(event.dynamodb.OldImage[fieldName]){
+    return event.dynamodb.OldImage[fieldName].S
+  }
+  return null
+}
+
+async function processError302(fileKey, externalId, event){
+
   const retryCount = event.dynamodb.OldImage.retryCount?event.dynamodb.OldImage.retryCount.N:0
+  // if first expiration then renew the timer for 10 days
   if(retryCount<1){
-    console.debug('Put new request TTL '+fileKey + ' ' + res.id + ' with retry count 1 and expiration in 10 days')
-    await ttlRepository.putRequestTTL(fileKey, res.id, requestTimestamp, 10, 1) 
+    console.debug('Put new request TTL '+fileKey + ' ' + externalId + ' with retry count 1 and expiration in 10 days')
+    const requestTimestampAsString = getStringValueFromCdcEvent(event, 'requestTimestamp')
+    const requestTimestamp = new Date(requestTimestampAsString)
+    await ttlRepository.putRequestTTL(fileKey, externalId, requestTimestamp, 10, 1) 
   } else {
-    await ttlRepository.putRequestTTL()
+    // else if this is the second expiration, track the error in history table
+    console.debug('Put error request history '+fileKey + ' ' + externalId + ' with retry count 1 and expiration in 10 days')
+    const mockEvent = {
+      fileKey,
+      externalId,
+      errorCode: 'E_UPLOAD_302'
+    }
+    await historyRepository.updateHistoryItemWithResponse(mockEvent, true)
   }
 }
 
@@ -65,7 +83,8 @@ async function processCdcTTLRemovalEvent(event, secrets){
       payload: payload
     })
 
-    await processError302(requestItem, event)
+    const externalId = getStringValueFromCdcEvent(event, 'externalId')
+    await processError302(fileKey, externalId, event)
   } else {
     throw new Error("CSOST Service error", event)
   }
