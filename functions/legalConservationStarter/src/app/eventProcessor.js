@@ -17,6 +17,16 @@ function getFileKeyFromCdcEvent(event){
   return null
 }
 
+async function processError302(requestItem, event){
+  const retryCount = event.dynamodb.OldImage.retryCount?event.dynamodb.OldImage.retryCount.N:0
+  if(retryCount<1){
+    console.debug('Put new request TTL '+fileKey + ' ' + res.id + ' with retry count 1 and expiration in 10 days')
+    await ttlRepository.putRequestTTL(fileKey, res.id, requestTimestamp, 10, 1) 
+  } else {
+    await ttlRepository.putRequestTTL()
+  }
+}
+
 async function processCdcTTLRemovalEvent(event, secrets){
   // get fileKey
   const fileKey = getFileKeyFromCdcEvent(event)
@@ -54,6 +64,8 @@ async function processCdcTTLRemovalEvent(event, secrets){
       res: res,
       payload: payload
     })
+
+    await processError302(requestItem, event)
   } else {
     throw new Error("CSOST Service error", event)
   }

@@ -4,14 +4,15 @@ const {
   PutCommand,
 } = require("@aws-sdk/lib-dynamodb");
 
-const ttlDurationInDays = 3;
+const defaultTtlDurationInDays = 3;
 
 function makePartitionKey(fileKey){
   return 'sla##'+fileKey
 }
 
-function getNextTtl(){
+function getNextTtl(nextDays = null){
   const date = new Date()
+  const ttlDurationInDays = nextDays?nextDays:defaultTtlDurationInDays
   date.setDate(date.getDate() + ttlDurationInDays);
   return date
 }
@@ -47,9 +48,9 @@ exports.deleteRequestTTL = async function(event){
   await ddbDocClient.send(new DeleteCommand(params));
 }
 
-exports.putRequestTTL = async function(fileKey, externalId, requestTimestamp){
+exports.putRequestTTL = async function(fileKey, externalId, requestTimestamp, nextDays = null, retryCount = 0){
   const partitionKey = makePartitionKey(fileKey)
-  const nextTtl = getNextTtl()
+  const nextTtl = getNextTtl(nextDays)
   const nextTtlTs = nextTtl.getTime()
   const params = {
     TableName: process.env.DYNAMODB_REQUEST_TABLE,
@@ -58,6 +59,7 @@ exports.putRequestTTL = async function(fileKey, externalId, requestTimestamp){
       sk: partitionKey,
       fileKey: fileKey,
       externalId: externalId,
+      retryCount: retryCount,
       requestTimestamp: requestTimestamp.toISOString(),
       sla_TTL: Math.floor(nextTtlTs / 1000),
       ttlExpirationTimestamp: nextTtl.toISOString()
