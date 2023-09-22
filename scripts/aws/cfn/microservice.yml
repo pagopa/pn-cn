@@ -144,12 +144,15 @@ Parameters:
     Type: Number
     Default: '10'
 
+  LegalConservationEnabled:
+    Type: String
+    Default: 'false'
+    AllowedValues:
+      - 'true'
+      - 'false'
+
 Conditions:
-  
-  IsDev: !Equals [ !Ref EnvType, 'dev' ]
-  IsTest: !Equals [ !Ref EnvType, 'test' ]
-  IsProd: !Equals [ !Ref EnvType, 'prod' ]
-  IsCNEnabled: !Or [ !Condition IsDev, !Condition IsTest, !Condition IsProd ]
+  IsCNEnabled: !Equals [ !Ref LegalConservationEnabled, 'true' ]
   
 Resources:
   #########################################################
