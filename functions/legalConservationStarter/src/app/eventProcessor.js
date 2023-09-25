@@ -39,7 +39,9 @@ async function processError302(fileKey, externalId, event){
     const mockEvent = {
       fileKey,
       externalId,
-      errorCode: 'E_UPLOAD_302'
+      errorCode: 'E_UPLOAD_302',
+      status: 'KO',
+      statusDate: new Date().toISOString()
     }
     await historyRepository.updateHistoryItemWithResponse(mockEvent, true)
   }
