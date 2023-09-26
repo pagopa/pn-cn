@@ -24,15 +24,21 @@
                 "S": "sla##PN_EXTERNAL_LEGAL_FACTS-56184aeb94d74c7093c99fb8ebfb2bb1.xml"
             },
             "sk": {
-                "S": "pluto"
+                "S": "sla##PN_EXTERNAL_LEGAL_FACTS-56184aeb94d74c7093c99fb8ebfb2bb1.xml"
+            },
+            "retryCount": {
+                "N": 0
+            },
+            "externalId": {
+                "S": "123456"
             }
         },
         "NewImage": {
             "pk": {
-                "S": "pippo"
+                "S": "sla##PN_EXTERNAL_LEGAL_FACTS-56184aeb94d74c7093c99fb8ebfb2bb1.xml"
             },
             "sk": {
-                "S": "pluto"
+                "S": "sla##PN_EXTERNAL_LEGAL_FACTS-56184aeb94d74c7093c99fb8ebfb2bb1.xml"
             }
         },
         "SizeBytes": 28
