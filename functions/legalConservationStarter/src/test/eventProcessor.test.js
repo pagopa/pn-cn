@@ -9,7 +9,8 @@ function proxyquireGen(typeIngest){
     return proxyquire.noCallThru().load("../app/eventProcessor.js", {
         'legal-conservation-commons': {
             historyRepository: {
-                putHistoryItem: () => {}
+                putHistoryItem: () => {},
+                updateHistoryItemWithResponse: () => {}
             },
             requestRepository: {
                 getRequest: () => {
@@ -67,24 +68,31 @@ describe('eventProcessor Testing', () => {
                 expect(res.ok).to.be.an("array").that.is.not.empty
                 expect(res.ok).contain(kinesisSafeStorage.kinesisSeqNumber)
             });
-            it('Test kinesisCdc for error E_UPLOAD_302 handle correctly', async () => {
+            it('Test kinesisCdc for error E_UPLOAD_302 in first retry case handle correctly', async () => {
                 const res = await processorUploadErr.processEvents([kinesisCdc], "secretId")
                 expect(res.ok).to.be.an("array").that.is.not.empty
                 expect(res.ok).contain(kinesisCdc.kinesisSeqNumber)
             });
-            it('Test unrecognized event workflow', async () => {
+            it('Test kinesisCdc for error E_UPLOAD_302 in second retry case handle correctly', async () => {
+                let kinesisCdcTemp = JSON.parse(JSON.stringify(kinesisCdc))
+                kinesisCdcTemp.dynamodb.OldImage.retryCount.N = 1
+                const res = await processorUploadErr.processEvents([kinesisCdcTemp], "secretId")
+                expect(res.ok).to.be.an("array").that.is.not.empty
+                expect(res.ok).contain(kinesisCdc.kinesisSeqNumber)
+            });
+            it('Test unrecognized not-valid-detail-type event workflow', async () => {
                 let kinesisSafeStorageTemp = JSON.parse(JSON.stringify(kinesisSafeStorage))
                 kinesisSafeStorageTemp['detail-type'] = "not-valid-detail-type"
                 const res = await processorOK.processEvents([kinesisSafeStorageTemp], "secretId")
                 expect(res.ok).to.be.an("array").that.is.not.empty
                 expect(res.ok).contain(kinesisSafeStorageTemp.kinesisSeqNumber)
             });
-            it('Test unrecognized event workflow', async () => {
+            it('Test unrecognized kinesisCdc event workflow', async () => {
                 const res = await processorErr.processEvents([kinesisCdc], "secretId")
                 expect(res.errors).to.be.an("array").that.is.not.empty
                 expect(res.errors).contain(kinesisCdc.kinesisSeqNumber)
             });
-            it('Test unrecognized event workflow', async () => {
+            it('Test unrecognized kinesisSafeStorage event workflow', async () => {
                 const res = await processorErr.processEvents([kinesisSafeStorage], "secretId")
                 expect(res.errors).to.be.an("array").that.is.not.empty
                 expect(res.errors).contain(kinesisSafeStorage.kinesisSeqNumber)
