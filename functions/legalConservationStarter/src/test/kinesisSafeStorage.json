@@ -1,0 +1,21 @@
+{
+    "kinesisSeqNumber": "49642115848638112355480323782160580827394338152236711954",
+    "version": "0",
+    "id": "340f3708-f0cb-405a-13bf-96d2849994bf",
+    "detail-type": "SafeStorageOutcomeEvent",
+    "source": "GESTORE DISPONIBILITA",
+    "account": "089813480515",
+    "time": "2023-06-28T07:38:12Z",
+    "region": "eu-south-1",
+    "resources": [],
+    "detail": {
+        "key": "PN_EXTERNAL_LEGAL_FACTS-56184aeb94d74c7093c99fb8ebfb2bb1.xml",
+        "versionId": "01",
+        "documentType": "PN_EXTERNAL_LEGAL_FACTS",
+        "documentStatus": "SAVED",
+        "contentType": "application/xml",
+        "checksum": "eUgOZ07/T98Dea7GBsLL3PFAvfd90MaZyBw3VqU4V6U=",
+        "retentionUntil": "2033-06-30T07:38:06Z",
+        "client_short_code": "pn-cons-001"
+    }
+}

@@ -1,0 +1,112 @@
+{
+    "pk": {
+        "S": "req##PN_EXTERNAL_LEGAL_FACTS-56184aeb94d74c7093c99fb8ebfb2bc1.xml"
+    },
+    "sk": {
+        "S": "req##PN_EXTERNAL_LEGAL_FACTS-56184aeb94d74c7093c99fb8ebfb2bc1.xml"
+    },
+    "externalId": {
+        "S": "TEST_1691412536372"
+    },
+    "fileKey": {
+        "S": "PN_EXTERNAL_LEGAL_FACTS-56184aeb94d74c7093c99fb8ebfb2bc1.xml"
+    },
+    "metadata": {
+        "M": {
+            "companyId": {
+                "S": "1"
+            },
+            "documentClassId": {
+                "S": "2"
+            },
+            "documentDate": {
+                "S": "2023-06-28T07:38:12Z"
+            },
+            "externalDocumentKey": {
+                "S": "PN_EXTERNAL_LEGAL_FACTS-56184aeb94d74c7093c99fb8ebfb2bc1.xml"
+            },
+            "metadata": {
+                "M": {
+                    "PAGOPA_DOCUMENT_ID": {
+                        "S": "PN_EXTERNAL_LEGAL_FACTS-56184aeb94d74c7093c99fb8ebfb2bc1.xml"
+                    },
+                    "S_AUTORE_CODICE": {
+                        "S": "15376371009"
+                    },
+                    "S_AUTORE_NOMINATIVO": {
+                        "S": "PagoPA S.p.A. / 5N2TR557"
+                    },
+                    "S_AUTORE_TIPO_SOGGETTO": {
+                        "S": "PAI"
+                    },
+                    "S_CONFORMITA": {
+                        "S": "False"
+                    },
+                    "S_FIRMATO_DIGITALMENTE": {
+                        "S": "False"
+                    },
+                    "S_FORMATO": {
+                        "S": "xml"
+                    },
+                    "S_MARCATO": {
+                        "S": "False"
+                    },
+                    "S_MODALITA_FORMAZIONE": {
+                        "S": "B"
+                    },
+                    "S_RISERVATO": {
+                        "S": "False"
+                    },
+                    "S_SIGILLATO_ELETTR": {
+                        "S": "False"
+                    },
+                    "S_TIPO_FLUSSO": {
+                        "S": "I"
+                    },
+                    "S_VERSIONE": {
+                        "S": "1"
+                    }
+                }
+            },
+            "remoteFileInfo": {
+                "M": {
+                    "contentType": {
+                        "S": "application/xml"
+                    },
+                    "fileName": {
+                        "S": "PN_EXTERNAL_LEGAL_FACTS-56184aeb94d74c7093c99fb8ebfb2bc1.xml"
+                    },
+                    "hash": {
+                        "S": "eUgOZ07/T98Dea7GBsLL3PFAvfd90MaZyBw3VqU4V6U="
+                    },
+                    "hashType": {
+                        "S": "SHA256"
+                    },
+                    "notificationParameters": {
+                        "M": {
+                            "HTTP_FILE_KEY": {
+                                "S": "PN_EXTERNAL_LEGAL_FACTS-56184aeb94d74c7093c99fb8ebfb2bc1.xml"
+                            }
+                        }
+                    },
+                    "remoteConfigurationCode": {
+                        "S": ""
+                    },
+                    "retrieveParameters": {
+                        "M": {
+                            "HTTP_FILE_KEY": {
+                                "S": "PN_EXTERNAL_LEGAL_FACTS-56184aeb94d74c7093c99fb8ebfb2bc1.xml"
+                            }
+                        }
+                    }
+                }
+            },
+            "signSingleDoc": {
+                "BOOL": false
+            }
+        }
+    },
+    "requestTimestamp": {
+        "S": "2023-08-07T12:48:56.372Z"
+    }
+}
