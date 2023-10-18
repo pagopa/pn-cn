@@ -30,7 +30,7 @@ async function ingestDocument(payload, secrets){
         })
       } else {
         const errorDescription = (data && data.code)? JSON.stringify(data):'undefined'
-        console.log('[DOWNSTREAM] Service CSost Ingestion returned errors='+ errorDescription)
+        console.warn('[DOWNSTREAM] Service CSost Ingestion returned errors='+ errorDescription)
         console.warn('INGESTION_ERROR', {
           res: data,
           req: fetchOptions
