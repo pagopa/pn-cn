@@ -16,6 +16,8 @@ async function ingestDocument(payload, secrets){
     
       console.debug('url to fetch', url)
     
+      console.log('[DOWNSTREAM] Invoking external service CSost Ingestion. Waiting Sync response.')
+
       const res = await fetch(url, fetchOptions);
       
       console.debug('fetchOptions', fetchOptions)
@@ -27,6 +29,8 @@ async function ingestDocument(payload, secrets){
           req: fetchOptions
         })
       } else {
+        const errorDescription = (data && data.code)? JSON.stringify(data):'undefined'
+        console.log('[DOWNSTREAM] Service CSost Ingestion returned errors='+ errorDescription)
         console.warn('INGESTION_ERROR', {
           res: data,
           req: fetchOptions
