@@ -35,11 +35,6 @@ Parameters:
     Type: String
     AllowedValues: [ON_DEMAND, PROVISIONED]
 
-  SafeStorageEventreamRetentionHours:
-    Type: Number
-    Description: Kinesis Data Stream retention period in hours"
-    Default: "365"
-
   SafeStorageEventStreamShardCount:
     Type: Number
     Default: "0"
@@ -49,12 +44,6 @@ Parameters:
     Default: ON_DEMAND
     Type: String
     AllowedValues: [ON_DEMAND, PROVISIONED]
-
-
-  LegalConservationEventUpdateStreamRetentionHours:
-    Type: Number
-    Description: Kinesis Data Stream retention period in hours"
-    Default: "365"
 
   LegalConservationEventUpdateStreamShardCount:
     Type: Number
@@ -169,7 +158,7 @@ Resources:
     UpdateReplacePolicy: Retain
     Properties:
       Name: !Sub "${ProjectName}-legal-conservation-event-update-stream-001"
-      RetentionPeriodHours: !Ref LegalConservationEventUpdateStreamRetentionHours
+      RetentionPeriodHours: 8760 # 365 days
       ShardCount: !If [LegalConservationEventUpdateOnDemandDisabled, !Ref LegalConservationEventUpdateStreamShardCount, !Ref "AWS::NoValue"]
       StreamEncryption:
         EncryptionType: KMS
@@ -186,7 +175,7 @@ Resources:
     UpdateReplacePolicy: Retain
     Properties:
       Name: !Sub "${ProjectName}-safe-storage-event-stream"
-      RetentionPeriodHours: !Ref SafeStorageEventreamRetentionHours
+      RetentionPeriodHours: 8760 # 365 days
       ShardCount: !If [SafeStorageEventOnDemandeDisabled, !Ref SafeStorageEventStreamShardCount, !Ref "AWS::NoValue"]
       StreamEncryption:
         EncryptionType: KMS
