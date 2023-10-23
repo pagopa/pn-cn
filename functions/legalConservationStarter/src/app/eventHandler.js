@@ -6,7 +6,18 @@ exports.handleEvent = async (event) => {
 
   console.log("event: ", event);
 
-  const secrets = await getSecret('pn-cn-Secrets')
+  let secrets = null
+  
+  try {
+    secrets = await getSecret('pn-cn-Secrets')
+  } catch(e){
+    // return error to kinesis
+    return {
+      batchItemFailures: [{
+        itemIdentifier: null
+      }]
+    }
+  }
 
   if(event.isFake){
     const s = await processEvents([event], secrets)
