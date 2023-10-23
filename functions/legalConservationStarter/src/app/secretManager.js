@@ -16,7 +16,7 @@ exports.getSecret = async function(secretName) {
     const secretAsJson = JSON.parse(secret)
     return secretAsJson
   } catch (err) {
-    console.error("Error in get secret ", err);
+    console.warn("Error in get secret ", err);
     throw new Error("Error in get secret "+secretName);
   }
 }

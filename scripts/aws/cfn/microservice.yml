@@ -389,6 +389,7 @@ Resources:
       Parameters:
         FunctionName: !Ref PreSignedUrlGeneratorLambda
         AlarmSNSTopicArn: !Ref AlarmSNSTopicArn
+        DataPointsToAlarm: 10
 
   # # Lambda access right
   PreSignedUrlGeneratorLambdaPermission:
