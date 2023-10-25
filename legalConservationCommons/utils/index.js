@@ -1,4 +1,4 @@
-const retryHandler = require('./retryHandler')
+const { retryHandler } = require('./retryHandler')
 
 module.exports = {
     retryHandler
