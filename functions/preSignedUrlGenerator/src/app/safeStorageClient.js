@@ -1,3 +1,6 @@
+// import retryHandler from pn-legal-conservation-commons
+const { retryHandler } = require('legal-conservation-commons')
+
 async function getResponseBody(response){
     if(!response.body){
         return null;
@@ -13,7 +16,7 @@ async function getResponseBody(response){
     return data
 }
 
-exports.getPresignedUrl = async function(fileKey){
+async function internalGetPresignedUrl(fileKey){
   
   const url = process.env.SAFESTORAGE_BASE_URL+'/v1/files/'+fileKey
 
@@ -63,4 +66,8 @@ exports.getPresignedUrl = async function(fileKey){
     console.log('Lambda nok response', response)      
     return response
   }
+}
+
+exports.getPresignedUrl = async function(fileKey) {
+  return retryHandler(() => internalGetPresignedUrl(fileKey), 3, 1000)
 }
