@@ -151,6 +151,11 @@ Parameters:
       - 'true'
       - 'false'
 
+  RetryErrorCodes:
+    Type: String
+    Default: ''
+    Description: Comma separated list of error codes that should trigger an automatic ingestion retry
+
 Conditions:
   IsCNEnabled: !Equals [ !Ref LegalConservationEnabled, 'true' ]
   
@@ -414,6 +419,7 @@ Resources:
           STREAM_KEY_ARN: !Ref LegalConservationUpdateKinesisStreamKeyArn
           DYNAMODB_REQUEST_TABLE: !Ref LegalConservationRequestDynamoTableName
           DYNAMODB_HISTORY_TABLE: !Ref LegalConservationRequestHistoryDynamoTableName
+          RETRY_ERROR_CODES: !Ref RetryErrorCodes
       TracingConfig:
         Mode: Active
       Layers:
