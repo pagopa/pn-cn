@@ -304,6 +304,7 @@ Resources:
         OnFailure:
           Destination: !Ref SafeStorageListenerDLQARN
 
+  # Eliminare allarmi una volta che inseriamo allarme su Iterator Age del Kinesis Stream
   SafeStorageListenerLambdaAlarms:
     Type: AWS::CloudFormation::Stack
     Properties:
@@ -311,6 +312,7 @@ Resources:
       Parameters:
         FunctionName: !Ref SafeStorageListenerLambda
         AlarmSNSTopicArn: !Ref AlarmSNSTopicArn
+        DataPointsToAlarm: 10
 
   # #########################################################
   # ###            PreSignedUrlGeneratorLambda            ###
@@ -381,15 +383,6 @@ Resources:
             - logs:PutLogEvents
             Effect: Allow
             Resource: "*"            
-
-  PreSignedUrlGeneratorLambdaAlarms:
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/lambda-alarms.yaml"
-      Parameters:
-        FunctionName: !Ref PreSignedUrlGeneratorLambda
-        AlarmSNSTopicArn: !Ref AlarmSNSTopicArn
-        DataPointsToAlarm: 10
 
   # # Lambda access right
   PreSignedUrlGeneratorLambdaPermission:
@@ -484,14 +477,6 @@ Resources:
               - kms:Describe*
             Effect: Allow
             Resource: !Ref LegalConservationUpdateKinesisStreamKeyArn               
-
-  EventUpdateReceiverLambdaAlarms:
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/lambda-alarms.yaml"
-      Parameters:
-        FunctionName: !Ref EventUpdateReceiverLambda
-        AlarmSNSTopicArn: !Ref AlarmSNSTopicArn
 
   # # Lambda access right
   EventUpdateReceiverLambdaPermission:
