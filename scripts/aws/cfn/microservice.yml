@@ -558,9 +558,7 @@ Resources:
             - !GetAtt EventUpdateReceiverLambda.Arn
         AlarmArns: !Join
           - ","
-          - - !GetAtt PreSignedUrlGeneratorLambdaAlarms.Outputs.LambdaInvocationErrorLogsMetricAlarm
             - !GetAtt SafeStorageListenerLambdaAlarms.Outputs.LambdaInvocationErrorLogsMetricAlarm
-            - !GetAtt EventUpdateReceiverLambdaAlarms.Outputs.LambdaInvocationErrorLogsMetricAlarm
             - !Ref LegalConservationTrackerDLQAlarmARN
             - !Ref SafeStorageListenerDLQAlarmARN
         LogGroupsNames: !Join
