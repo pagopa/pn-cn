@@ -374,17 +374,24 @@ Outputs:
   CdcLegalConservationKinesisSourceStreamArn:
     Description: "Kinesis source CDC stream ARN"
     Value: !GetAtt CdcLegalConservationKinesisStream.Arn
+  CdcLegalConservationKinesisSourceStreamName:
+    Description: "Kinesis source CDC stream Name"
+    Value: !Ref CdcLegalConservationKinesisStream
   CdcLegalConservationKinesisSourceStreamKeyArn:
     Description: "Kinesis source CDC stream crypto key ARN"
     Value: !GetAtt CdcLegalConservationKinesisServerSideEncryptionKey.Arn
 
   LegalConservationUpdateKinesisStreamArn:
     Value: !GetAtt LegalConservationUpdateKinesisStream.Arn
+  LegalConservationUpdateKinesisStreamName:
+    Value: !Ref LegalConservationUpdateKinesisStream
   LegalConservationUpdateKinesisStreamKeyArn:
     Value: !GetAtt LegalConservationEventUpdateKinesisServerSideEncryptionKey.Arn
 
   SafeStorageEventKinesisStreamArn:
     Value: !GetAtt SafeStorageEventKinesisStream.Arn
+  SafeStorageEventKinesisStreamName:
+    Value: !Ref SafeStorageEventKinesisStream
   SafeStorageEventKinesisStreamKeyArn:
     Value: !GetAtt SafeStorageEventKinesisServerSideEncryptionKey.Arn
 
