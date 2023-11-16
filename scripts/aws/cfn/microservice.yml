@@ -151,6 +151,28 @@ Parameters:
       - 'true'
       - 'false'
 
+  RetryErrorCodes:
+    Type: String
+    Default: ''
+    Description: Comma separated list of error codes that should trigger an automatic ingestion retry
+
+  CdcLegalConservationKinesisSourceStreamName:
+    Type: String
+  
+  LegalConservationUpdateKinesisStreamName:
+    Type: String
+  
+  SafeStorageEventKinesisStreamName:
+    Type: String
+
+  CdcKinesisMaxAgeInMilliseconds:
+    Type: Number
+    Default: 129600000 # 36 hours
+    
+  SafeStorageEventKinesisMaxAgeInMilliseconds:
+    Type: Number
+    Default: 129600000 # 36 hours
+
 Conditions:
   IsCNEnabled: !Equals [ !Ref LegalConservationEnabled, 'true' ]
   
@@ -304,6 +326,7 @@ Resources:
         OnFailure:
           Destination: !Ref SafeStorageListenerDLQARN
 
+  # Eliminare allarmi una volta che inseriamo allarme su Iterator Age del Kinesis Stream
   SafeStorageListenerLambdaAlarms:
     Type: AWS::CloudFormation::Stack
     Properties:
@@ -311,6 +334,7 @@ Resources:
       Parameters:
         FunctionName: !Ref SafeStorageListenerLambda
         AlarmSNSTopicArn: !Ref AlarmSNSTopicArn
+        DataPointsToAlarm: 10
 
   # #########################################################
   # ###            PreSignedUrlGeneratorLambda            ###
@@ -382,15 +406,6 @@ Resources:
             Effect: Allow
             Resource: "*"            
 
-  PreSignedUrlGeneratorLambdaAlarms:
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/lambda-alarms.yaml"
-      Parameters:
-        FunctionName: !Ref PreSignedUrlGeneratorLambda
-        AlarmSNSTopicArn: !Ref AlarmSNSTopicArn
-        DataPointsToAlarm: 10
-
   # # Lambda access right
   PreSignedUrlGeneratorLambdaPermission:
     Type: AWS::Lambda::Permission
@@ -421,6 +436,7 @@ Resources:
           STREAM_KEY_ARN: !Ref LegalConservationUpdateKinesisStreamKeyArn
           DYNAMODB_REQUEST_TABLE: !Ref LegalConservationRequestDynamoTableName
           DYNAMODB_HISTORY_TABLE: !Ref LegalConservationRequestHistoryDynamoTableName
+          RETRY_ERROR_CODES: !Ref RetryErrorCodes
       TracingConfig:
         Mode: Active
       Layers:
@@ -485,14 +501,6 @@ Resources:
             Effect: Allow
             Resource: !Ref LegalConservationUpdateKinesisStreamKeyArn               
 
-  EventUpdateReceiverLambdaAlarms:
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/lambda-alarms.yaml"
-      Parameters:
-        FunctionName: !Ref EventUpdateReceiverLambda
-        AlarmSNSTopicArn: !Ref AlarmSNSTopicArn
-
   # # Lambda access right
   EventUpdateReceiverLambdaPermission:
     Type: AWS::Lambda::Permission
@@ -550,6 +558,48 @@ Resources:
           DeadLetterConfig: 
             Arn: !Ref EventBusDeadLetterQueueArn
 
+  # Cdc Kinesis GetRecords.IteratorAgeMilliseconds alarm
+  CdcKinesisGetRecordsIteratorAgeAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${ProjectName}-CdcCNKinesis-IteratorAge-Alarm"
+      AlarmDescription: "CloudWatch alarm for when Kinesis Logs GetRecords.IteratorAgeMilliseconds is too high."
+      TreatMissingData: notBreaching        
+      AlarmActions:
+        - !Ref AlarmSNSTopicArn
+      Dimensions:
+        - Value: !Ref CdcLegalConservationKinesisSourceStreamName
+          Name: StreamName
+      DatapointsToAlarm: 10           
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      EvaluationPeriods: 60
+      Period: 60
+      Namespace: AWS/Kinesis   
+      MetricName: GetRecords.IteratorAgeMilliseconds
+      Statistic: Maximum
+      Threshold: !Ref CdcKinesisMaxAgeInMilliseconds
+
+  # SafeStorage Kinesis GetRecords.IteratorAgeMilliseconds alarm
+  SafeStorageKinesisGetRecordsIteratorAgeAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${ProjectName}-SafeStorageCNKinesis-IteratorAge-Alarm"
+      AlarmDescription: "CloudWatch alarm for when Kinesis SafeStorage GetRecords.IteratorAgeMilliseconds is too high."
+      TreatMissingData: notBreaching        
+      AlarmActions:
+        - !Ref AlarmSNSTopicArn
+      Dimensions:
+        - Value: !Ref SafeStorageEventKinesisStreamName
+          Name: StreamName
+      DatapointsToAlarm: 10           
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      EvaluationPeriods: 60
+      Period: 60
+      Namespace: AWS/Kinesis   
+      MetricName: GetRecords.IteratorAgeMilliseconds
+      Statistic: Maximum
+      Threshold: !Ref SafeStorageEventKinesisMaxAgeInMilliseconds
+
   # Dashboard
   MicroserviceDashboard:
     Type: AWS::CloudFormation::Stack
@@ -567,11 +617,11 @@ Resources:
             - !GetAtt EventUpdateReceiverLambda.Arn
         AlarmArns: !Join
           - ","
-          - - !GetAtt PreSignedUrlGeneratorLambdaAlarms.Outputs.LambdaInvocationErrorLogsMetricAlarm
-            - !GetAtt SafeStorageListenerLambdaAlarms.Outputs.LambdaInvocationErrorLogsMetricAlarm
-            - !GetAtt EventUpdateReceiverLambdaAlarms.Outputs.LambdaInvocationErrorLogsMetricAlarm
+          - - !GetAtt SafeStorageListenerLambdaAlarms.Outputs.LambdaInvocationErrorLogsMetricAlarm
             - !Ref LegalConservationTrackerDLQAlarmARN
             - !Ref SafeStorageListenerDLQAlarmARN
+            - !GetAtt CdcKinesisGetRecordsIteratorAgeAlarm.Arn
+            - !GetAtt SafeStorageKinesisGetRecordsIteratorAgeAlarm.Arn
         LogGroupsNames: !Join
           - ","
           - - !Sub /aws/lambda/${PreSignedUrlGeneratorLambda}

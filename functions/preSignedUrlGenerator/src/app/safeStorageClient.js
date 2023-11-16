@@ -1,3 +1,6 @@
+// import retryHandler from pn-legal-conservation-commons
+const { retryHandler } = require('legal-conservation-commons')
+
 async function getResponseBody(response){
     if(!response.body){
         return null;
@@ -13,30 +16,17 @@ async function getResponseBody(response){
     return data
 }
 
-exports.getPresignedUrl = async function(fileKey){
-  
-  const url = process.env.SAFESTORAGE_BASE_URL+'/v1/files/'+fileKey
-
-  const headers = {
-    'x-pagopa-safestorage-cx-id': process.env.SAFESTORAGE_CLIENT_ID,
-  }  
-
-  const fetchOptions = { 
-    method: 'GET',
-    headers: headers
-  }
-
-  console.debug('url to fetch', url)
-
+async function internalGetPresignedUrl(url, fetchOptions){
   const res = await fetch(url, fetchOptions);
-  
-  console.debug('fetchOptions', fetchOptions)
-  console.debug('res', res)
-  console.debug('headers', Object.fromEntries(res.headers))
   
   if (res.ok) {
     const data = await getResponseBody(res)
-    console.log('ok data', data)
+    console.log('SAFESTORAGE_PRESIGNED_OK', {
+      res: data,
+      url: url,
+      req: fetchOptions
+    })
+
     const response = {
       statusCode: res.status,
       headers: Object.fromEntries(res.headers)
@@ -50,7 +40,7 @@ exports.getPresignedUrl = async function(fileKey){
     return response
   } else {
     const data = await getResponseBody(res)
-    console.log('nok data', data)
+
     const response = {
       statusCode: res.status,
       headers: Object.fromEntries(res.headers)
@@ -60,7 +50,34 @@ exports.getPresignedUrl = async function(fileKey){
         response.body = data
     }
 
-    console.log('Lambda nok response', response)      
+    console.warn('Service SafeStorage preSignedlUrl returned errors', {
+      res: response,
+      url: url,
+      req: fetchOptions
+    })
+
     return response
   }
 }
+
+async function preSignedUrl(fileKey) {
+  const url = process.env.SAFESTORAGE_BASE_URL+'/v1/files/'+fileKey
+
+  const headers = {
+    'x-pagopa-safestorage-cx-id': process.env.SAFESTORAGE_CLIENT_ID,
+  }  
+
+  const fetchOptions = { 
+    method: 'GET',
+    headers: headers
+  }
+
+  console.log('Invoking service SafeStorage preSignedlUrl. Waiting Sync response.', {
+    url: url,
+    fetchOptions: fetchOptions
+  })
+
+  return retryHandler(() => internalGetPresignedUrl(url, fetchOptions), 3, 1000)
+}
+
+exports.getPresignedUrl = preSignedUrl
