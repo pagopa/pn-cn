@@ -175,7 +175,7 @@ Resources:
     UpdateReplacePolicy: Retain
     Properties:
       Name: !Sub "${ProjectName}-safe-storage-event-stream"
-      RetentionPeriodHours: 8760 # 365 days
+      RetentionPeriodHours: 720 # 30 days
       ShardCount: !If [SafeStorageEventOnDemandeDisabled, !Ref SafeStorageEventStreamShardCount, !Ref "AWS::NoValue"]
       StreamEncryption:
         EncryptionType: KMS
