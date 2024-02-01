@@ -47,6 +47,27 @@ describe('Secret Manager Testing', () => {
             expect(res.metadata["S_CLASSIFICAZIONE_DSC"]).to.not.be.undefined;
             expect(res.metadata["S_CLASSIFICAZIONE_DSC"]).to.equal("Piattaforma Notifiche - Ricevute postalizzazione");
         });
+
+        it('generate Metadata for \"RicevutePostalizzazione\" and .bin extension', async () => {
+            let kinesisSafeStorageTemp = JSON.parse(JSON.stringify(kinesisSafeStorage))
+            kinesisSafeStorageTemp['detail'].documentType = "PN_EXTERNAL_LEGAL_FACTS"
+            kinesisSafeStorageTemp['detail'].key = "PN_EXTERNAL_LEGAL_FACTS-56184aeb94d74c7093c99fb8ebfb2bb1.bin"
+            kinesisSafeStorageTemp['detail'].contentType = "application/octet-stream"
+            const res = await preparePayloadFromSafeStorageEvent(kinesisSafeStorageTemp);
+            expect(res.metadata["S_CLASSIFICAZIONE_DSC"]).to.not.be.null;
+            expect(res.metadata["S_CLASSIFICAZIONE_DSC"]).to.not.be.undefined;
+            expect(res.metadata["S_CLASSIFICAZIONE_DSC"]).to.equal("Piattaforma Notifiche - Ricevute postalizzazione");
+        });
+
+        it('generate Metadata for \"RicevutePostalizzazione\" and .bin extension with wront content type', async () => {
+            let kinesisSafeStorageTemp = JSON.parse(JSON.stringify(kinesisSafeStorage))
+            kinesisSafeStorageTemp['detail'].documentType = "PN_EXTERNAL_LEGAL_FACTS"
+            kinesisSafeStorageTemp['detail'].key = "PN_EXTERNAL_LEGAL_FACTS-56184aeb94d74c7093c99fb8ebfb2bb1.bin"
+            kinesisSafeStorageTemp['detail'].contentType = "application/octet-stream123"
+            const res = await preparePayloadFromSafeStorageEvent(kinesisSafeStorageTemp);
+            expect(res.metadata["S_CLASSIFICAZIONE_DSC"]).to.be.undefined;
+        });
+
         it('generate Metadata for \"Log\"', async () => {
             let kinesisSafeStorageTemp = JSON.parse(JSON.stringify(kinesisSafeStorage))
             kinesisSafeStorageTemp['detail'].documentType = "PN_LOGS_ARCHIVE_AUDIT5Y"
