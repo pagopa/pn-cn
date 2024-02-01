@@ -241,6 +241,8 @@ Resources:
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
         - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        - arn:aws:iam::aws:policy/CloudWatchLambdaInsightsExecutionRolePolicy
+        - arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess
       Path: /
 
   # Lambda function IAM policy
@@ -400,6 +402,8 @@ Resources:
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
         - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        - arn:aws:iam::aws:policy/CloudWatchLambdaInsightsExecutionRolePolicy
+        - arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess
 
   PreSignedUrlGeneratorLambdaRolePolicy:
     Type: AWS::IAM::Policy
@@ -470,6 +474,8 @@ Resources:
               - sts:AssumeRole
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        - arn:aws:iam::aws:policy/CloudWatchLambdaInsightsExecutionRolePolicy
+        - arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess
 
   EventUpdateReceiverLambdaRolePolicy:
     Type: AWS::IAM::Policy
@@ -562,7 +568,7 @@ Resources:
       EventPattern:
         detail-type: [ "SafeStorageOutcomeEvent" ]
         detail:
-          documentType: [ 'PN_AAR', 'PN_LEGAL_FACTS', 'PN_DOWNTIME_LEGAL_FACTS', 'PN_EXTERNAL_LEGAL_FACTS', 'PN_LOGS_ARCHIVE_AUDIT5Y', 'PN_LOGS_ARCHIVE_AUDIT10Y' ]
+          documentType: [ 'PN_AAR', 'PN_LEGAL_FACTS', 'PN_DOWNTIME_LEGAL_FACTS', 'PN_EXTERNAL_LEGAL_FACTS', 'PN_LOGS_ARCHIVE_AUDIT5Y', 'PN_LOGS_ARCHIVE_AUDIT2Y', 'PN_LOGS_ARCHIVE_AUDIT10Y' ]
       Targets: 
         - Id: !Sub '${ProjectName}-ConfinfoEventbus-SafeStore2LegalConservation'
           Arn: !Ref SafeStorageEventKinesisStreamArn

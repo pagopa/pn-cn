@@ -13,7 +13,7 @@ function isAttestazioneOpponibiliATerzi(event){
   }
   
   function isLog(event){
-    return ['PN_LOGS_ARCHIVE_AUDIT5Y', 'PN_LOGS_ARCHIVE_AUDIT10Y'].indexOf(event.detail.documentType)>=0
+    return ['PN_LOGS_ARCHIVE_AUDIT5Y', 'PN_LOGS_ARCHIVE_AUDIT2Y', 'PN_LOGS_ARCHIVE_AUDIT10Y'].indexOf(event.detail.documentType)>=0
   }
   
   function getDocumentClassId(event){
