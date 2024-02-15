@@ -82,12 +82,16 @@ exports.updateHistoryItemWithResponse = async function(event, withError = false)
     attributesToUpdate.push('errorCode')
   }
 
-  const updateExpression = 'SET '+attributesToUpdate.map((i) => {
+  let updateExpression = 'SET '+attributesToUpdate.map((i) => {
     if(i==='status'){
       return '#response_status = :'+i
     }
     return i+' = :'+i
   }).join(', ')
+
+  if(!withError){
+    updateExpression += ' REMOVE errorCode_errorResponseTimestampYearMonth, errorResponseTimestamp, errorResponseTimestampYearMonth, errorCode'
+  }
 
   params.UpdateExpression = updateExpression
   
