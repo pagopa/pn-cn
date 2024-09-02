@@ -595,11 +595,11 @@ Resources:
             Resource: "*"   
           - Sid: ReadEvents
             Action:
-            - "kinesis:DescribeStream"
-            - "kinesis:GetRecords"
-            - "kinesis:GetShardIterator"
-            - "kinesis:ListStreams"
-            - "kinesis:SubscribeToShard"
+            - kinesis:DescribeStream
+            - kinesis:GetRecords
+            - kinesis:GetShardIterator
+            - kinesis:ListStreams
+            - kinesis:SubscribeToShard
             Resource: !Ref LegalConservationUpdateKinesisStreamArn  
           - Sid: UpdateTables
             Action:
