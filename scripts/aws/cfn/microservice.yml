@@ -611,14 +611,23 @@ Resources:
             Effect: Allow
             Resource: 
               - !Ref LegalConservationRequestDynamoTableArn
-              - !Ref LegalConservationRequestHistoryDynamoTableArn              
+              - !Ref LegalConservationRequestHistoryDynamoTableArn  
+          - Sid: SQSmessage
+            Action:
+            - sqs:ReceiveMessage
+            - sqs:DeleteMessage
+            - sqs:GetQueueAttributes
+            - sqs:SendMessage
+            Effect: Allow
+            Resource:
+              - !Ref LegalConservationTrackerDLQARN            
           - Sid: Encrypt
             Action:
-              - kms:Encrypt*
-              - kms:Decrypt*
-              - kms:ReEncrypt*
-              - kms:GenerateDataKey*
-              - kms:Describe*
+            - kms:Encrypt*
+            - kms:Decrypt*
+            - kms:ReEncrypt*
+            - kms:GenerateDataKey*
+            - kms:Describe*
             Effect: Allow
             Resource: !Ref LegalConservationUpdateKinesisStreamKeyArn               
 
