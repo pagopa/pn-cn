@@ -601,6 +601,7 @@ Resources:
             - kinesis:ListStreams
             - kinesis:SubscribeToShard
             Resource: !Ref LegalConservationUpdateKinesisStreamArn  
+            Effect: Allow
           - Sid: UpdateTables
             Action:
             - dynamodb:PutItem
