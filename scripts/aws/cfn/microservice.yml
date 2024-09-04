@@ -560,6 +560,7 @@ Resources:
       Layers:
         - !Sub "arn:aws:lambda:${AWS::Region}:339249233099:layer:LambdaInsightsExtension:13"
       Timeout: 180
+      
 
   # # Lambda function role
   LegalConservationTrackerLambdaRole:
@@ -654,6 +655,7 @@ Resources:
         - ReportBatchItemFailures
       MaximumBatchingWindowInSeconds: 300 # 1 minute
       StartingPosition: TRIM_HORIZON
+      MaximumRetryAttempts: 10
       DestinationConfig:
         OnFailure:
           Destination: !Ref LegalConservationTrackerDLQARN
