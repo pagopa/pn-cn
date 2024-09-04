@@ -455,6 +455,8 @@ Resources:
           DYNAMODB_REQUEST_TABLE: !Ref LegalConservationRequestDynamoTableName
           DYNAMODB_HISTORY_TABLE: !Ref LegalConservationRequestHistoryDynamoTableName
           RETRY_ERROR_CODES: !Ref RetryErrorCodes
+          SAFESTORAGE_BASE_URL: !Sub http://${ApplicationLoadBalancerDomain}:8080/safe-storage
+          SAFESTORAGE_CLIENT_ID: !Ref SafeStorageClientId
       TracingConfig:
         Mode: Active
       Layers:
