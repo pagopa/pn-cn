@@ -6,7 +6,7 @@ function isError(event){
 }
 
 function prepareBody(event) {
-    let lc_external_id = event.serviceProvider ? `${event.serviceProvider}` : `COMDATA::` 
+    let lc_external_id = event.serviceProvider ? `${event.serviceProvider}::${event.externalId}` : `COMDATA::${event.externalId}` 
     let lc_start_date = event.statusDate
     let fileKey = event.fileKey
     const body = {
@@ -34,7 +34,7 @@ exports.processEvent = async function(event){
             await requestRepository.deleteRequest(fileKey)
         }
         else {
-            throw new Error(`Problem to update tags for fileKey ${fileKey}`)
+            throw new Error(`Problem to update tags for fileKey ${fileKey} - ${response}`)
         }
     }
     else {

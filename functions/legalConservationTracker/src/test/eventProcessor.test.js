@@ -55,13 +55,16 @@ describe('eventProcessor Testing', () => {
     });
 
     it('processEvents handled with error putTags', async () => {
+        const response = {
+            statusCode: 400,
+        }
         try {
             await proxyErr.processEvent(kinesisEvent)
         }
         catch (error) {
             expect(error).to.not.be.null;
             expect(error).to.not.be.undefined;
-            expect(error.message).to.equal(`Problem to update tags for fileKey ${kinesisEventError.fileKey}`);
+            expect(error.message).to.equal(`Problem to update tags for fileKey ${kinesisEventError.fileKey} - ${response}`);
         }
     });
 
