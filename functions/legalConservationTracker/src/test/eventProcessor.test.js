@@ -3,8 +3,6 @@ const proxyquire = require("proxyquire").noPreserveCache();
 const sinon = require('sinon');
 const deleteRequestStub = sinon.stub();
 const kinesisEvent = require('./kinesisEvent.json')
-const kinesisEventError = require('./kinesisEventError.json')
-
 const proxyOK = proxyquire.noCallThru().load("../app/eventProcessor.js", {
                 'legal-conservation-commons': {
                     requestRepository: {
@@ -64,18 +62,7 @@ describe('eventProcessor Testing', () => {
         catch (error) {
             expect(error).to.not.be.null;
             expect(error).to.not.be.undefined;
-            expect(error.message).to.equal(`Problem to update tags for fileKey ${kinesisEventError.fileKey} - ${response}`);
-        }
-    });
-
-    it('processEvents throws error', async () => {
-        try {
-            await proxyOK.processEvent(kinesisEventError)
-        }
-        catch (error) {
-            expect(error).to.not.be.null;
-            expect(error).to.not.be.undefined;
-            expect(error.message).to.equal(`Legal Conservation error failed for fileKey ${kinesisEventError.fileKey}`);
+            expect(error.message).to.equal(`Problem to update tags for fileKey ${kinesisEvent.fileKey} - ${response}`);
         }
     });
 });

@@ -16,7 +16,7 @@ function decodePayload(b64Str) {
 }
 
 function mustProcess(rec) {
-  return true
+  return rec.status==='OK'
 }
 
 exports.extractKinesisData = function (kinesisEvent) {
