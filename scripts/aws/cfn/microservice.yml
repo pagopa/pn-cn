@@ -147,6 +147,10 @@ Parameters:
     Type: Number
     Default: '10'
 
+  LegalConservationTrackerReservedConcurrency:
+    Type: Number
+    Default: '10'
+
   LegalConservationEnabled:
     Type: String
     Default: 'false'
@@ -547,6 +551,7 @@ Resources:
         S3Bucket: !Ref LambdasBucketName
         S3Key: !Sub "${BucketBasePath}/legalConservationTracker.zip"
       Role: !GetAtt LegalConservationTrackerLambdaRole.Arn
+      ReservedConcurrentExecutions: !Ref LegalConservationTrackerReservedConcurrency
       Environment:
         Variables:
           REGION: !Sub ${AWS::Region}
