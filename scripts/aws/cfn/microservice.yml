@@ -560,7 +560,6 @@ Resources:
           RETRY_ERROR_CODES: !Ref RetryErrorCodes
           SAFESTORAGE_BASE_URL: !Sub http://${ApplicationLoadBalancerDomain}:8080/safe-storage
           SAFESTORAGE_CLIENT_ID: !Ref SafeStorageClientId
-
       VpcConfig:
         SecurityGroupIds:
           - !GetAtt LegalConservationTrackerLambdaSecGroup.GroupId
