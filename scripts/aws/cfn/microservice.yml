@@ -593,6 +593,7 @@ Resources:
               - sts:AssumeRole
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
         # - arn:aws:iam::aws:policy/CloudWatchLambdaInsightsExecutionRolePolicy
         # - arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess
 
@@ -780,6 +781,7 @@ Resources:
           - - !GetAtt PreSignedUrlGeneratorLambda.Arn
             - !GetAtt SafeStorageListenerLambda.Arn
             - !GetAtt EventUpdateReceiverLambda.Arn
+            - !GetAtt LegalConservationTrackerLambda.Arn
         AlarmArns: !Join
           - ","
           - - !GetAtt SafeStorageListenerLambdaAlarms.Outputs.LambdaInvocationErrorLogsMetricAlarm
@@ -792,3 +794,4 @@ Resources:
           - - !Sub /aws/lambda/${PreSignedUrlGeneratorLambda}
             - !Sub /aws/lambda/${SafeStorageListenerLambda}
             - !Sub /aws/lambda/${EventUpdateReceiverLambda}
+            - !Sub /aws/lambda/${LegalConservationTrackerLambda}
