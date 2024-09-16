@@ -222,6 +222,7 @@ Resources:
           DYNAMODB_HISTORY_TABLE: !Sub "${LegalConservationRequestHistoryDynamoTableName}"
           CONSERVATION_SERVICE_BASE_URL: !Ref ConservationServiceBaseUrl
           REMOTE_CONFIGURATION_CODE: !Ref RemoteConfigurationCode
+          SAFESTORAGE_BASE_URL: !Sub http://${ApplicationLoadBalancerDomain}:8080/safe-storage
           ENV_TYPE: !Ref EnvType
           SSM_PARAMETER_STORE_TIMEOUT_MILLIS: 5000
       Timeout: 180
