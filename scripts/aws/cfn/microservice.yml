@@ -459,8 +459,6 @@ Resources:
           DYNAMODB_REQUEST_TABLE: !Ref LegalConservationRequestDynamoTableName
           DYNAMODB_HISTORY_TABLE: !Ref LegalConservationRequestHistoryDynamoTableName
           RETRY_ERROR_CODES: !Ref RetryErrorCodes
-          SAFESTORAGE_BASE_URL: !Sub http://${ApplicationLoadBalancerDomain}:8080/safe-storage
-          SAFESTORAGE_CLIENT_ID: !Ref SafeStorageClientId
       TracingConfig:
         Mode: Active
       Layers:
@@ -561,12 +559,24 @@ Resources:
           DYNAMODB_HISTORY_TABLE: !Ref LegalConservationRequestHistoryDynamoTableName
           RETRY_ERROR_CODES: !Ref RetryErrorCodes
           SAFESTORAGE_BASE_URL: !Sub http://${ApplicationLoadBalancerDomain}:8080/safe-storage
+          SAFESTORAGE_CLIENT_ID: !Ref SafeStorageClientId
+
+      VpcConfig:
+        SecurityGroupIds:
+          - !GetAtt LegalConservationTrackerLambdaSecGroup.GroupId
+        SubnetIds: !Ref SubnetsIds 
       TracingConfig:
         Mode: Active
       Layers:
         - !Sub "arn:aws:lambda:${AWS::Region}:339249233099:layer:LambdaInsightsExtension:13"
       Timeout: 180
       
+
+  LegalConservationTrackerLambdaSecGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: !Sub '${LegalConservationTrackerLambdaName}-sec-group'
+      VpcId: !Ref VpcId
 
   # # Lambda function role
   LegalConservationTrackerLambdaRole:
