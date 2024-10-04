@@ -1,0 +1,20 @@
+{
+    "Records": [
+      {
+        "kinesis": {
+            "kinesisSchemaVersion": "1.0",
+            "partitionKey": "str##PN_AAR-52a7acf554dd48f2864cb0f0ee807ce7.pdf",
+            "sequenceNumber": "49644824167076596201511769190453670079601595520944963586",
+            "data": "eyJmaWxlS2V5IjoiUE5fQUFSLTUyYTdhY2Y1NTRkZDQ4ZjI4NjRjYjBmMGVlODA3Y2U3LnBkZiIsImV4dGVybmFsSWQiOiJNT0NLIyNkZWQ4ZTM4OS0xNzAyLTQyOWMtYTJlYy0yNjFlZDI2NWUxNzkiLCJzdGF0dXNEYXRlIjoiMjAyMy0wOS0yNVQwOToxNjoyMi45NjFaIiwic3RhdHVzIjoiT0siLCJpc0ZpbmFsIjp0cnVlfQ==",
+            "approximateArrivalTimestamp": 1695633443.65
+          },
+        "eventSource": "aws:kinesis",
+        "eventVersion": "1.0",
+        "eventID": "shardId-000000000003:49644800828075603462898392760099877955765774006720921650",
+        "eventName": "aws:kinesis:record",
+        "invokeIdentityArn": "arn:aws:iam::089813480515:role/pn-legalConservationTrackerRole",
+        "awsRegion": "eu-south-1",
+        "eventSourceARN": "arn:aws:kinesis:eu-south-1:089813480515:stream/pn-legal-conservation-event-update-stream-001"
+      }
+    ]
+  }
