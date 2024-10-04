@@ -149,7 +149,7 @@ Parameters:
 
   LegalConservationTrackerReservedConcurrency:
     Type: Number
-    Default: '10'
+    Default: '1'
 
   LegalConservationEnabled:
     Type: String

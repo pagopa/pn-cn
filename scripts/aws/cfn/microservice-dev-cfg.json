@@ -6,6 +6,5 @@
     "LegalConservationEnabled": "true",
     "RetryErrorCodes": "E_RDR_999",
     "LegalConservationTrackerReservedConcurrency": "1"
-
   }
 }

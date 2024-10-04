@@ -6,7 +6,6 @@ async function getResponseBody(response){
         return null;
     }
     const contentType = response.headers.get("content-type");
-    console.log('Content Type', contentType)
     if (contentType && contentType.toLowerCase().indexOf("application/json") !== -1) {
         const data = await response.json()   
         return JSON.stringify(data)
