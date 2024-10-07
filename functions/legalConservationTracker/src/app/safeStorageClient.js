@@ -59,8 +59,8 @@ async function internalUpdateTags(url, fetchOptions){
   }
 }
 
-async function updateTags(body) {
-  const url = `${process.env.SAFESTORAGE_BASE_URL}/v1/files/tags`
+async function updateTags(fileKey, body) {
+  const url = `${process.env.SAFESTORAGE_BASE_URL}/v1/files/${fileKey}/tags`
   const fetchOptions = { 
     method: 'POST',
     headers: {
