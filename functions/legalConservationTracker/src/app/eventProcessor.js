@@ -19,8 +19,9 @@ exports.processEvent = async function(event){
     const response = await putUpdateTags(fileKey, body)
     if(response.statusCode == 200) {
         await requestRepository.deleteRequest(fileKey)
+        console.log(`Delete request for ${fileKey} handled correctly`)
     }
     else {
-        throw new Error(`Problem to update tags for fileKey ${fileKey} - ${response}`)
+        throw new Error(`Problem to update tags for fileKey ${fileKey}`, response)
     }
 }

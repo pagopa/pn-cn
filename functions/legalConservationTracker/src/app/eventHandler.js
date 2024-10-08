@@ -9,6 +9,7 @@ exports.handleEvent = async (event) => {
 
     for (const record of kinesisEvents) {
         try {
+            console.log(`Processing record`, record)
             await processEvent(record)
         }
         catch (e) {
