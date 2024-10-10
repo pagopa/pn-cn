@@ -2,7 +2,8 @@ const { ddbDocClient } = require("./ddbClient.js");
 const {
   PutCommand,
   GetCommand,
-  UpdateCommand
+  UpdateCommand,
+  DeleteCommand
 } = require("@aws-sdk/lib-dynamodb");
 
 function makeRequestPartitionKey(fileKey){
@@ -54,4 +55,16 @@ exports.getRequest = async function(fileKey){
     }
   };
   return await ddbDocClient.send(new GetCommand(params));
+}
+
+exports.deleteRequest = async function(fileKey){
+  const partitionKey = makeRequestPartitionKey(fileKey)
+  const params = {
+    TableName: process.env.DYNAMODB_REQUEST_TABLE,
+    Key: {
+      pk: partitionKey,
+      sk: partitionKey
+    }
+  };
+  return await ddbDocClient.send(new DeleteCommand(params));
 }

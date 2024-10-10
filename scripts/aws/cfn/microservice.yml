@@ -110,6 +110,9 @@ Parameters:
   PreSignedUrlGeneratorLambdaName:
     Type: String
 
+  LegalConservationTrackerLambdaName:
+    Type: String
+  
   EventUpdateReceiverLambdaName:
     Type: String
 
@@ -143,6 +146,10 @@ Parameters:
   SafeStorageListenerReservedConcurrency:
     Type: Number
     Default: '10'
+
+  LegalConservationTrackerReservedConcurrency:
+    Type: Number
+    Default: '1'
 
   LegalConservationEnabled:
     Type: String
@@ -241,8 +248,8 @@ Resources:
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
         - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
-        - arn:aws:iam::aws:policy/CloudWatchLambdaInsightsExecutionRolePolicy
-        - arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess
+        # - arn:aws:iam::aws:policy/CloudWatchLambdaInsightsExecutionRolePolicy
+        # - arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess
       Path: /
 
   # Lambda function IAM policy
@@ -402,8 +409,8 @@ Resources:
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
         - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
-        - arn:aws:iam::aws:policy/CloudWatchLambdaInsightsExecutionRolePolicy
-        - arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess
+        # - arn:aws:iam::aws:policy/CloudWatchLambdaInsightsExecutionRolePolicy
+        # - arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess
 
   PreSignedUrlGeneratorLambdaRolePolicy:
     Type: AWS::IAM::Policy
@@ -474,8 +481,8 @@ Resources:
               - sts:AssumeRole
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
-        - arn:aws:iam::aws:policy/CloudWatchLambdaInsightsExecutionRolePolicy
-        - arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess
+        # - arn:aws:iam::aws:policy/CloudWatchLambdaInsightsExecutionRolePolicy
+        # - arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess
 
   EventUpdateReceiverLambdaRolePolicy:
     Type: AWS::IAM::Policy
@@ -526,6 +533,148 @@ Resources:
       Action: lambda:InvokeFunction
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${PnCoreAwsAccountId}:*/*'
+
+
+  # #########################################################
+  # ###            LegalConservationTracker               ###
+  # #########################################################
+  # # Lambda function
+  LegalConservationTrackerLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Ref LegalConservationTrackerLambdaName
+      Runtime: nodejs18.x
+      Handler: "index.handler"
+      Code:
+        S3Bucket: !Ref LambdasBucketName
+        S3Key: !Sub "${BucketBasePath}/legalConservationTracker.zip"
+      Role: !GetAtt LegalConservationTrackerLambdaRole.Arn
+      ReservedConcurrentExecutions: !Ref LegalConservationTrackerReservedConcurrency
+      Environment:
+        Variables:
+          REGION: !Sub ${AWS::Region}
+          STREAM_ARN: !Ref LegalConservationUpdateKinesisStreamArn
+          STREAM_KEY_ARN: !Ref LegalConservationUpdateKinesisStreamKeyArn
+          DYNAMODB_REQUEST_TABLE: !Ref LegalConservationRequestDynamoTableName
+          DYNAMODB_HISTORY_TABLE: !Ref LegalConservationRequestHistoryDynamoTableName
+          RETRY_ERROR_CODES: !Ref RetryErrorCodes
+          SAFESTORAGE_BASE_URL: !Sub http://${ApplicationLoadBalancerDomain}:8080/safe-storage
+          SAFESTORAGE_CLIENT_ID: !Ref SafeStorageClientId
+      VpcConfig:
+        SecurityGroupIds:
+          - !GetAtt LegalConservationTrackerLambdaSecGroup.GroupId
+        SubnetIds: !Ref SubnetsIds 
+      TracingConfig:
+        Mode: Active
+      Layers:
+        - !Sub "arn:aws:lambda:${AWS::Region}:339249233099:layer:LambdaInsightsExtension:13"
+      Timeout: 180
+      
+
+  LegalConservationTrackerLambdaSecGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: !Sub '${LegalConservationTrackerLambdaName}-sec-group'
+      VpcId: !Ref VpcId
+
+  # # Lambda function role
+  LegalConservationTrackerLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${LegalConservationTrackerLambdaName}Role
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
+        # - arn:aws:iam::aws:policy/CloudWatchLambdaInsightsExecutionRolePolicy
+        # - arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess
+
+  LegalConservationTrackerRolePolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: !Sub ${LegalConservationTrackerLambdaName}RolePolicy
+      Roles:
+        - !Ref LegalConservationTrackerLambdaRole
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Sid: AllowLambdaToCreateLogs
+            Action:
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+            Effect: Allow
+            Resource: "*"   
+          - Sid: ReadEvents
+            Action:
+            - kinesis:DescribeStream
+            - kinesis:GetRecords
+            - kinesis:GetShardIterator
+            - kinesis:ListStreams
+            - kinesis:SubscribeToShard
+            Resource: !Ref LegalConservationUpdateKinesisStreamArn  
+            Effect: Allow
+          - Sid: UpdateTables
+            Action:
+            - dynamodb:PutItem
+            - dynamodb:GetItem
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
+            Effect: Allow
+            Resource: 
+              - !Ref LegalConservationRequestDynamoTableArn
+              - !Ref LegalConservationRequestHistoryDynamoTableArn  
+          - Sid: SQSmessage
+            Action:
+            - sqs:ReceiveMessage
+            - sqs:DeleteMessage
+            - sqs:GetQueueAttributes
+            - sqs:SendMessage
+            Effect: Allow
+            Resource:
+              - !Ref LegalConservationTrackerDLQARN            
+          - Sid: Encrypt
+            Action:
+            - kms:Encrypt*
+            - kms:Decrypt*
+            - kms:ReEncrypt*
+            - kms:GenerateDataKey*
+            - kms:Describe*
+            Effect: Allow
+            Resource: !Ref LegalConservationUpdateKinesisStreamKeyArn               
+
+  # # Lambda access right
+  LegalConservationTrackerLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref LegalConservationTrackerLambda
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${PnCoreAwsAccountId}:*/*'
+
+  LegalConservationTrackerEventSourceMapping:
+    Type: AWS::Lambda::EventSourceMapping
+    Condition: IsCNEnabled  
+    Properties:
+      BatchSize: 20
+      BisectBatchOnFunctionError: true
+      EventSourceArn: !Ref LegalConservationUpdateKinesisStreamArn
+      FunctionName: !GetAtt LegalConservationTrackerLambda.Arn
+      FunctionResponseTypes:
+        - ReportBatchItemFailures
+      MaximumBatchingWindowInSeconds: 300 # 1 minute
+      StartingPosition: TRIM_HORIZON
+      MaximumRetryAttempts: 10
+      DestinationConfig:
+        OnFailure:
+          Destination: !Ref LegalConservationTrackerDLQARN
 
   # Allow event bus rules to write to kinesis stream
   EventBusEnqueueRole:
@@ -632,6 +781,7 @@ Resources:
           - - !GetAtt PreSignedUrlGeneratorLambda.Arn
             - !GetAtt SafeStorageListenerLambda.Arn
             - !GetAtt EventUpdateReceiverLambda.Arn
+            - !GetAtt LegalConservationTrackerLambda.Arn
         AlarmArns: !Join
           - ","
           - - !GetAtt SafeStorageListenerLambdaAlarms.Outputs.LambdaInvocationErrorLogsMetricAlarm
@@ -644,3 +794,4 @@ Resources:
           - - !Sub /aws/lambda/${PreSignedUrlGeneratorLambda}
             - !Sub /aws/lambda/${SafeStorageListenerLambda}
             - !Sub /aws/lambda/${EventUpdateReceiverLambda}
+            - !Sub /aws/lambda/${LegalConservationTrackerLambda}
