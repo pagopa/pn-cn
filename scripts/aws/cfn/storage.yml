@@ -74,6 +74,7 @@ Resources:
   CdcLegalConservationKinesisServerSideEncryptionKey:
     Type: AWS::KMS::Key
     Properties:
+      EnableKeyRotation: true
       KeyPolicy:
         Statement:
           - Action: kms:*
@@ -95,6 +96,7 @@ Resources:
   SafeStorageEventKinesisServerSideEncryptionKey:
     Type: AWS::KMS::Key
     Properties:
+      EnableKeyRotation: true
       KeyPolicy:
         Statement:
           - Action: kms:*
@@ -116,6 +118,7 @@ Resources:
   LegalConservationEventUpdateKinesisServerSideEncryptionKey:
     Type: AWS::KMS::Key
     Properties:
+      EnableKeyRotation: true
       KeyPolicy:
         Statement:
           - Action: kms:*
