@@ -63,6 +63,10 @@ Parameters:
     Type: Number
     Default: 14
 
+  LogsKinesisSourceStreamArn:
+    Type: String
+    Description: 'Where to send Logs'
+    
 Conditions:
   CdcLegalConservationOnDemandDisabled: !Not [!Equals [!Ref CdcLegalConservationStreamMode, ON_DEMAND]]
   LegalConservationEventUpdateOnDemandDisabled: !Not [!Equals [!Ref LegalConservationEventUpdateStreamMode, ON_DEMAND]]
@@ -324,6 +328,7 @@ Resources:
         LogGroupName: !Sub "${ProjectName}-legalConservationStarter"
         LogGroupRetention: !Ref LogRetention
         LogGroupPrefix: '/aws/lambda'
+        LogsKinesisSourceStreamArn: !Ref LogsKinesisSourceStreamArn
 
   PreSignedUrlGeneratorLambdaLogGroup:
     Type: AWS::CloudFormation::Stack
@@ -335,6 +340,7 @@ Resources:
         LogGroupName: !Sub "${ProjectName}-preSignedUrlGenerator"
         LogGroupRetention: !Ref LogRetention
         LogGroupPrefix: '/aws/lambda'
+        LogsKinesisSourceStreamArn: !Ref LogsKinesisSourceStreamArn
 
   EventUpdateReceiverLambdaLogGroup:
     Type: AWS::CloudFormation::Stack
@@ -346,6 +352,7 @@ Resources:
         LogGroupName: !Sub "${ProjectName}-eventUpdateRecevier"
         LogGroupRetention: !Ref LogRetention
         LogGroupPrefix: '/aws/lambda'
+        LogsKinesisSourceStreamArn: !Ref LogsKinesisSourceStreamArn
 
   LegalConservationTrackerLambdaLogGroup:
     Type: AWS::CloudFormation::Stack
@@ -357,6 +364,7 @@ Resources:
         LogGroupName: !Sub "${ProjectName}-legalConservationTracker"
         LogGroupRetention: !Ref LogRetention
         LogGroupPrefix: '/aws/lambda'
+        LogsKinesisSourceStreamArn: !Ref LogsKinesisSourceStreamArn
 
 Outputs:
   LegalConservationRequestDynamoTableName:
