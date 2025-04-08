@@ -3,14 +3,11 @@ const {
   GetCommand,
 } = require("@aws-sdk/lib-dynamodb");
 
-function makeFileKeyPartitionKey(fileKey){
-  return 'safestorage://'+fileKey
-}
 
 exports.getDocument = async function(fileKey){
-  const partitionKey = makeFileKeyPartitionKey(fileKey)
+  const partitionKey = fileKey
   const params = {
-    TableName: process.env.DYNAMODB_DOC_TABLE,
+    TableName: "pn-SsDocumenti",
     Key: {
       pk: partitionKey
     }

@@ -100,7 +100,15 @@ async function processSafeStorageEvent(event, secrets){
   }
 
   const documentData =  await docRepository.getDocument(event.detail.key)
-  const contentLength = documentData.contentLenght
+  let contentLength = 0;
+  if(!documentData || !documentData.Item || documentData.Item.length == 0){
+    console.warn('Request item not found for file key '+fileKey)
+    return
+  }
+  else {
+    contentLength = (documentData.Item[0]).contentLenght
+  }
+
   if(contentLength <= 0){
     console.info('Event skipped because of content length of file is not valid', event)
     return

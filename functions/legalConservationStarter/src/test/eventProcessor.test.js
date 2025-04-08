@@ -25,7 +25,7 @@ function proxyquireGen(typeIngest){
             requestRepository: {
                 getRequest: () => {
                     return {
-                        Item: pnLegalConservationRequest
+                        Item: [pnLegalConservationRequest]
                     }
                 },
                 updateRequest: updateRequestStub,
@@ -37,7 +37,7 @@ function proxyquireGen(typeIngest){
             docRepository: {
                 getDocument: () => {
                     return {
-                        Item: documentMock
+                        Item: [documentMock]
                     }
                 }
             },
