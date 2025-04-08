@@ -4,7 +4,9 @@ const { createcSostResponseOK, createcSostResponseErr } = require("./utils.js")
 const kinesisSafeStorage = require('./kinesisSafeStorage.json')
 const kinesisCdc = require('./kinesisCdc.json')
 const pnLegalConservationRequest = require('./pnLegalConservationRequest.json')
+const documentMock = require('./pnSsDocument.json')
 const sinon = require('sinon');
+const { getDocument } = require("legal-conservation-commons/persistence/docRepository.js");
 
 const putRequestTTLStub = sinon.stub();
 const putHistoryItemStub = sinon.stub();
@@ -31,6 +33,13 @@ function proxyquireGen(typeIngest){
             },
             ttlRepository: {
                 putRequestTTL: putRequestTTLStub
+            },
+            docRepository: {
+                getDocument: () => {
+                    return {
+                        Item: documentMock
+                    }
+                }
             },
         },
         './csostClient': {

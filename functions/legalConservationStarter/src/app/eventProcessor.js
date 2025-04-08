@@ -1,6 +1,6 @@
 const { isCdcTtlRemovalEvent, isSafeStorageEvent } = require('./kinesis')
 
-const { historyRepository, requestRepository, ttlRepository } = require('legal-conservation-commons')
+const { historyRepository, requestRepository, ttlRepository, docRepository } = require('legal-conservation-commons')
 const { ingestDocument } = require('./csostClient')
 const { preparePayloadFromSafeStorageEvent } = require('./metadataPreparator')
 
@@ -96,6 +96,13 @@ async function processSafeStorageEvent(event, secrets){
   const payload = preparePayloadFromSafeStorageEvent(event)
   if(!payload.documentClassId){
     console.info('Event skipped because of missing document class Id', event)
+    return
+  }
+
+  const documentData =  await docRepository.getDocument(event.detail.key)
+  const contentLength = documentData.contentLenght
+  if(contentLength <= 0){
+    console.info('Event skipped because of content length of file is not valid', event)
     return
   }
 
