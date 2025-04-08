@@ -101,12 +101,12 @@ async function processSafeStorageEvent(event, secrets){
 
   const documentData =  await docRepository.getDocument(event.detail.key)
   let contentLength = 0;
-  if(!documentData || !documentData.Item || documentData.Item.length == 0){
-    console.warn('Request item not found for file key '+fileKey)
+  if(!documentData || !documentData.Item){
+    console.warn('Request item not found for file key '+ fileKey)
     return
   }
   else {
-    contentLength = (documentData.Item[0]).contentLenght
+    contentLength = documentData.Item.contentLenght
   }
 
   if(contentLength <= 0){
