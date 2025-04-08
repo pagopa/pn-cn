@@ -109,7 +109,7 @@ async function processSafeStorageEvent(event, secrets){
     dimension = documentData.Item.contentLenght
   }
 
-  if(!dimension || dimension <= 0){
+  if(dimension <= 0){
     console.info('Event skipped because of content length of file is not valid', event)
     return
   }
