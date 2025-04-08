@@ -9,7 +9,7 @@ exports.getDocument = async function(fileKey){
   const params = {
     TableName: "pn-SsDocumenti",
     Key: {
-      pk: partitionKey
+      documentKey: partitionKey
     }
   };
   return await ddbDocClient.send(new GetCommand(params));
