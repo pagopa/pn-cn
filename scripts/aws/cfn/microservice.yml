@@ -306,6 +306,13 @@ Resources:
               - sqs:SendMessage
             Resource:
               - !Ref SafeStorageListenerDLQARN
+          - Effect: Allow
+            Action:
+               - "dynamodb:GetItem"
+               - "dynamodb:BatchGetItem"
+               - "dynamodb:Query"
+               - "dynamodb:ConditionCheckItem"
+            Resource: !Sub arn:${AWS::Partition}:dynamodb:${AWS::Region}:${AWS::AccountId}:table/pn-SsDocumenti
 
   SafeStorageListenerEventSourceMapping:
     Type: AWS::Lambda::EventSourceMapping
