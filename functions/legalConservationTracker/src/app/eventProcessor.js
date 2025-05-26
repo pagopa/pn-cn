@@ -22,6 +22,6 @@ exports.processEvent = async function(event){
         console.log(`Delete request for ${fileKey} handled correctly`)
     }
     else {
-        throw new Error(`Problem to update tags for fileKey ${fileKey}`, response)
+        throw new Error(`Problem to update tags for fileKey ${fileKey} - `+JSON.stringify(response))
     }
 }
