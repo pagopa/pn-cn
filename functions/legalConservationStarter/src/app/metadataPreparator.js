@@ -9,7 +9,7 @@ function isAttestazioneOpponibiliATerzi(event){
   }
   
   function isRicevutePostalizzazione(event){
-    return event.detail.documentType==='PN_EXTERNAL_LEGAL_FACTS' && ['application/pdf', 'application/octet-stream'].indexOf(event.detail.contentType)>=0
+    return event.detail.documentType==='PN_EXTERNAL_LEGAL_FACTS' && ['application/pdf', 'application/zip', 'application/octet-stream'].indexOf(event.detail.contentType)>=0
   }
   
   function isLog(event){
