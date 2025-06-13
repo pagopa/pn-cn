@@ -199,7 +199,7 @@ Resources:
     Type: AWS::Lambda::Function
     Properties:
       FunctionName: !Ref SafeStorageListenerLambdaName
-      Runtime: nodejs18.x
+      Runtime: nodejs22.x
       Handler: "index.handler"
       ReservedConcurrentExecutions: !Ref SafeStorageListenerReservedConcurrency
       Code:
@@ -213,8 +213,7 @@ Resources:
       TracingConfig:
         Mode: Active
       Layers:
-        - !Sub "arn:aws:lambda:${AWS::Region}:339249233099:layer:LambdaInsightsExtension:13"
-        - !Sub "arn:aws:lambda:${AWS::Region}:325218067255:layer:AWS-Parameters-and-Secrets-Lambda-Extension:4" 
+        - "arn:aws:lambda:eu-south-1:325218067255:layer:AWS-Parameters-and-Secrets-Lambda-Extension:17" 
       Environment:
         Variables:
           REGION: !Sub ${AWS::Region}
@@ -372,7 +371,7 @@ Resources:
     Type: AWS::Lambda::Function
     Properties:
       FunctionName: !Ref PreSignedUrlGeneratorLambdaName
-      Runtime: nodejs18.x
+      Runtime: nodejs22.x
       Handler: "index.handler"
       Code:
         S3Bucket: !Ref LambdasBucketName
@@ -389,8 +388,6 @@ Resources:
         SubnetIds: !Ref SubnetsIds          
       TracingConfig:
         Mode: Active
-      Layers:
-        - !Sub "arn:aws:lambda:${AWS::Region}:339249233099:layer:LambdaInsightsExtension:13"
       Timeout: 10
       Tags:
         - Key: "pn-eni-related"
@@ -452,7 +449,7 @@ Resources:
     Type: AWS::Lambda::Function
     Properties:
       FunctionName: !Ref EventUpdateReceiverLambdaName
-      Runtime: nodejs18.x
+      Runtime: nodejs22.x
       Handler: "index.handler"
       Code:
         S3Bucket: !Ref LambdasBucketName
@@ -468,8 +465,6 @@ Resources:
           RETRY_ERROR_CODES: !Ref RetryErrorCodes
       TracingConfig:
         Mode: Active
-      Layers:
-        - !Sub "arn:aws:lambda:${AWS::Region}:339249233099:layer:LambdaInsightsExtension:13"
       Timeout: 10
 
   # # Lambda function role
@@ -550,7 +545,7 @@ Resources:
     Type: AWS::Lambda::Function
     Properties:
       FunctionName: !Ref LegalConservationTrackerLambdaName
-      Runtime: nodejs18.x
+      Runtime: nodejs22.x
       Handler: "index.handler"
       Code:
         S3Bucket: !Ref LambdasBucketName
@@ -573,8 +568,6 @@ Resources:
         SubnetIds: !Ref SubnetsIds 
       TracingConfig:
         Mode: Active
-      Layers:
-        - !Sub "arn:aws:lambda:${AWS::Region}:339249233099:layer:LambdaInsightsExtension:13"
       Timeout: 180
       
 

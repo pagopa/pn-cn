@@ -62,7 +62,7 @@ describe('eventProcessor Testing', () => {
         catch (error) {
             expect(error).to.not.be.null;
             expect(error).to.not.be.undefined;
-            expect(error.message).to.equal(`Problem to update tags for fileKey ${kinesisEvent.fileKey} - ${response}`);
+            expect(error.message).to.equal(`Problem to update tags for fileKey ${kinesisEvent.fileKey} - ${JSON.stringify(response)}`);
         }
     });
 });
