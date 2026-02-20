@@ -321,7 +321,6 @@ Resources:
               - s3:ListBucket
               - s3:GetBucketLocation
             Resource: !Sub arn:${AWS::Partition}:s3:::pn-esm-kinesis-failure-notifications-${AWS::Region}-${AWS::AccountId}
-
           - Effect: Allow
             Action:
               - s3:PutObject
@@ -726,7 +725,11 @@ Resources:
             Action:
               - s3:ListBucket
               - s3:GetBucketLocation
-            Resource: !Sub arn:${AWS::Partition}:s3:::pn-esm-kinesis-failure-notifications-${AWS::Region}-${AWS::AccountId}           
+            Resource: !Sub arn:${AWS::Partition}:s3:::pn-esm-kinesis-failure-notifications-${AWS::Region}-${AWS::AccountId}
+          - Effect: Allow
+            Action:
+              - s3:PutObject
+            Resource: !Sub arn:${AWS::Partition}:s3:::pn-esm-kinesis-failure-notifications-${AWS::Region}-${AWS::AccountId}/*         
 
   # # Lambda access right
   LegalConservationTrackerLambdaPermission:
