@@ -592,12 +592,7 @@ Resources:
               - kms:GenerateDataKey*
               - kms:Describe*
             Effect: Allow
-            Resource: !Ref LegalConservationUpdateKinesisStreamKeyArn
-          - Effect: Allow
-            Action:
-              - s3:ListBucket
-              - s3:GetBucketLocation
-            Resource: !Sub arn:${AWS::Partition}:s3:::pn-esm-kinesis-failure-notifications-${AWS::Region}-${AWS::AccountId}         
+            Resource: !Ref LegalConservationUpdateKinesisStreamKeyArn 
 
   # # Lambda access right
   EventUpdateReceiverLambdaPermission:
@@ -742,6 +737,8 @@ Resources:
 
   LegalConservationTrackerEventSourceMapping:
     Type: AWS::Lambda::EventSourceMapping
+    DependsOn:
+      - LegalConservationTrackerRolePolicy
     Condition: IsCNEnabled  
     Properties:
       BatchSize: 20
