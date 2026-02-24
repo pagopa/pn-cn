@@ -90,22 +90,11 @@ Parameters:
   SafeStorageListenerLambdaName:
     Type: String
 
-  LegalConservationTrackerDLQARN:
-    Type: String
-    Description: 'DLQ ARN for LegalConservationTracker'
-
   SafeStorageListenerDLQName:
     Type: String
 
   SafeStorageListenerDLQARN:
     Type: String
-
-  SafeStorageListenerDLQAlarmARN:
-    Type: String
-
-  LegalConservationTrackerDLQAlarmARN:
-    Type: String
-    Description: 'DLQ Alarm ARN for LegalConservationTracker'
 
   PreSignedUrlGeneratorLambdaName:
     Type: String
@@ -697,16 +686,7 @@ Resources:
             Effect: Allow
             Resource: 
               - !Ref LegalConservationRequestDynamoTableArn
-              - !Ref LegalConservationRequestHistoryDynamoTableArn  
-          - Sid: SQSmessage
-            Action:
-            - sqs:ReceiveMessage
-            - sqs:DeleteMessage
-            - sqs:GetQueueAttributes
-            - sqs:SendMessage
-            Effect: Allow
-            Resource:
-              - !Ref LegalConservationTrackerDLQARN            
+              - !Ref LegalConservationRequestHistoryDynamoTableArn         
           - Sid: Encrypt
             Action:
             - kms:Encrypt*
@@ -910,8 +890,6 @@ Resources:
         AlarmArns: !Join
           - ","
           - - !GetAtt SafeStorageListenerLambdaAlarms.Outputs.LambdaInvocationErrorLogsMetricAlarm
-            - !Ref LegalConservationTrackerDLQAlarmARN
-            - !Ref SafeStorageListenerDLQAlarmARN
             - !GetAtt CdcKinesisGetRecordsIteratorAgeAlarm.Arn
             - !GetAtt SafeStorageKinesisGetRecordsIteratorAgeAlarm.Arn
             - !GetAtt LegalConservationUpdateKinesisGetRecordsIteratorAgeAlarm.Arn
