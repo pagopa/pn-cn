@@ -341,7 +341,7 @@ Resources:
       FunctionResponseTypes:
         - ReportBatchItemFailures
       MaximumBatchingWindowInSeconds: 300 # 1 minute
-      MaximumRecordAgeInSeconds: 604800 # 7 days
+      MaximumRecordAgeInSeconds: 900 # 15 minutes
       StartingPosition: TRIM_HORIZON
       DestinationConfig:
         OnFailure:
@@ -407,7 +407,7 @@ Resources:
       DatapointsToAlarm: 1           
       ComparisonOperator: GreaterThanOrEqualToThreshold
       EvaluationPeriods: 2
-      Period: 600
+      Period: 3600
       Namespace: ESM/Kinesis
       MetricName: ProcessingFailures
       Statistic: Maximum
