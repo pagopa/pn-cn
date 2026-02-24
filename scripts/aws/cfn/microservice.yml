@@ -406,8 +406,8 @@ Resources:
           Name: StreamName
       DatapointsToAlarm: 1           
       ComparisonOperator: GreaterThanOrEqualToThreshold
-      EvaluationPeriods: 2
-      Period: 3600
+      EvaluationPeriods: 6
+      Period: 600
       Namespace: ESM/Kinesis
       MetricName: ProcessingFailures
       Statistic: Maximum
