@@ -90,12 +90,6 @@ Parameters:
   SafeStorageListenerLambdaName:
     Type: String
 
-  SafeStorageListenerDLQName:
-    Type: String
-
-  SafeStorageListenerDLQARN:
-    Type: String
-
   PreSignedUrlGeneratorLambdaName:
     Type: String
 
@@ -302,14 +296,6 @@ Resources:
             Resource: 
               - !Ref CdcLegalConservationKinesisSourceStreamKeyArn
               - !Ref SafeStorageEventKinesisStreamKeyArn
-          - Effect: Allow
-            Action:
-              - sqs:ReceiveMessage
-              - sqs:DeleteMessage
-              - sqs:GetQueueAttributes
-              - sqs:SendMessage
-            Resource:
-              - !Ref SafeStorageListenerDLQARN
           - Effect: Allow
             Action:
                - "dynamodb:GetItem"
