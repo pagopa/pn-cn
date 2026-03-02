@@ -5,6 +5,7 @@
     "RemoteConfigurationCode": "",
     "LegalConservationEnabled": "true",
     "RetryErrorCodes": "E_RDR_999",
-    "LegalConservationTrackerReservedConcurrency": "1"
+    "LegalConservationTrackerReservedConcurrency": "1",
+    "LegalConservationUpdateKinesisMaximumRecordAgeInSeconds": "-1"
   }
 }
