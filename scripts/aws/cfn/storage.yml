@@ -292,32 +292,6 @@ Resources:
         StreamViewType: NEW_IMAGE
 
   # SQS Queue
-  SafeStorageListenerDLQ:
-    Type: AWS::CloudFormation::Stack
-    UpdateReplacePolicy: Retain
-    DeletionPolicy: Retain 
-    Properties:
-      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/sqs-queue.yaml"
-      Parameters:
-        QueueName: !Sub "${ProjectName}-cn-safe-storage-listener-stream-dlq"
-        DelaySeconds: 10
-        HasDLQ: "false"
-        QueueHasAlarm: "true"
-        AlarmSNSTopicName: !Ref AlarmSNSTopicName
-
-  LegalConservationTrackerDLQ:
-    Type: AWS::CloudFormation::Stack
-    UpdateReplacePolicy: Retain
-    DeletionPolicy: Retain
-    Properties:
-      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/sqs-queue.yaml"
-      Parameters:
-        QueueName: !Sub '${ProjectName}-legal_conservation_tracker_DLQ'
-        DelaySeconds: 1
-        AlarmSNSTopicName: !Ref AlarmSNSTopicName
-        HasDLQ: "false"
-        QueueHasAlarm: "true"
-
   LegalConservationStarterLambdaLogGroup:
     Type: AWS::CloudFormation::Stack
     UpdateReplacePolicy: Retain
@@ -405,32 +379,6 @@ Outputs:
     Value: !Ref SafeStorageEventKinesisStream
   SafeStorageEventKinesisStreamKeyArn:
     Value: !GetAtt SafeStorageEventKinesisServerSideEncryptionKey.Arn
-
-  LegalConservationTrackerDLQName:
-    Value: !GetAtt LegalConservationTrackerDLQ.Outputs.QueueName
-    Description: queue name
-  LegalConservationTrackerDLQURL:
-    Value: !GetAtt LegalConservationTrackerDLQ.Outputs.QueueURL
-    Description: e URL
-  LegalConservationTrackerDLQARN:
-    Value: !GetAtt LegalConservationTrackerDLQ.Outputs.QueueARN
-    Description: queue ARN
-  LegalConservationTrackerDLQAlarmARN:
-    Value: !GetAtt LegalConservationTrackerDLQ.Outputs.SqsDLQAlarmArn
-    Description: alarm ARN
-
-  SafeStorageListenerDLQName:
-    Value: !GetAtt SafeStorageListenerDLQ.Outputs.QueueName
-    Description: queue name
-  SafeStorageListenerDLQURL:
-    Value: !GetAtt SafeStorageListenerDLQ.Outputs.QueueURL
-    Description: e URL
-  SafeStorageListenerDLQARN:
-    Value: !GetAtt SafeStorageListenerDLQ.Outputs.QueueARN
-    Description: queue ARN
-  SafeStorageListenerDLQAlarmARN:
-    Value: !GetAtt SafeStorageListenerDLQ.Outputs.SqsDLQAlarmArn
-    Description: alarm ARN
 
   # Lambda functions
   SafeStorageListenerLambdaName:

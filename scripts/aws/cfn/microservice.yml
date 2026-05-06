@@ -90,23 +90,6 @@ Parameters:
   SafeStorageListenerLambdaName:
     Type: String
 
-  LegalConservationTrackerDLQARN:
-    Type: String
-    Description: 'DLQ ARN for LegalConservationTracker'
-
-  SafeStorageListenerDLQName:
-    Type: String
-
-  SafeStorageListenerDLQARN:
-    Type: String
-
-  SafeStorageListenerDLQAlarmARN:
-    Type: String
-
-  LegalConservationTrackerDLQAlarmARN:
-    Type: String
-    Description: 'DLQ Alarm ARN for LegalConservationTracker'
-
   PreSignedUrlGeneratorLambdaName:
     Type: String
 
@@ -179,6 +162,22 @@ Parameters:
   SafeStorageEventKinesisMaxAgeInMilliseconds:
     Type: Number
     Default: 129600000 # 36 hours
+    
+  LegalConservationUpdateKinesisMaxAgeInMilliseconds:
+    Type: Number
+    Default: 129600000 # 36 hours
+
+  LegalConservationUpdateKinesisMaximumRecordAgeInSeconds:
+    Type: Number
+    Default: 604800 # 7 days
+
+  SafeStorageListenerLambdaKinesisMaximumRecordAgeInSeconds:
+    Type: Number
+    Default: 604800 # 7 days
+
+  SafeStorageListenerMaximumRecordAgeInSeconds:
+    Type: Number
+    Default: 604800 # 7 days
 
 Conditions:
   IsCNEnabled: !Equals [ !Ref LegalConservationEnabled, 'true' ]
@@ -299,23 +298,28 @@ Resources:
               - !Ref SafeStorageEventKinesisStreamKeyArn
           - Effect: Allow
             Action:
-              - sqs:ReceiveMessage
-              - sqs:DeleteMessage
-              - sqs:GetQueueAttributes
-              - sqs:SendMessage
-            Resource:
-              - !Ref SafeStorageListenerDLQARN
-          - Effect: Allow
-            Action:
                - "dynamodb:GetItem"
                - "dynamodb:BatchGetItem"
                - "dynamodb:Query"
                - "dynamodb:ConditionCheckItem"
             Resource: !Sub arn:${AWS::Partition}:dynamodb:${AWS::Region}:${AWS::AccountId}:table/pn-SsDocumenti
+          - Effect: Allow
+            Action:
+              - s3:ListBucket
+              - s3:GetBucketLocation
+            Resource: !Sub arn:${AWS::Partition}:s3:::pn-esm-kinesis-failure-notifications-${AWS::Region}-${AWS::AccountId}
+          - Effect: Allow
+            Action:
+              - s3:PutObject
+            Resource: !Sub arn:${AWS::Partition}:s3:::pn-esm-kinesis-failure-notifications-${AWS::Region}-${AWS::AccountId}/*
+
+          
 
   SafeStorageListenerEventSourceMapping:
     Type: AWS::Lambda::EventSourceMapping
-    Condition: IsCNEnabled  
+    Condition: IsCNEnabled
+    DependsOn:
+      - SafeStorageListenerLambdaRolePolicy
     Properties:
       BatchSize: 20
       BisectBatchOnFunctionError: true
@@ -324,10 +328,35 @@ Resources:
       FunctionResponseTypes:
         - ReportBatchItemFailures
       MaximumBatchingWindowInSeconds: 300 # 1 minute
+      MaximumRecordAgeInSeconds: !Ref SafeStorageListenerMaximumRecordAgeInSeconds # 7 days
       StartingPosition: TRIM_HORIZON
       DestinationConfig:
         OnFailure:
-          Destination: !Ref SafeStorageListenerDLQARN
+          Destination: !Sub arn:${AWS::Partition}:s3:::pn-esm-kinesis-failure-notifications-${AWS::Region}-${AWS::AccountId}
+
+  SafeStorageListenerKinesisFailuresAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${ProjectName}-SafeStorageListener-ESM-Alarm"
+      AlarmDescription: "CloudWatch alarm for when SafeStorageListenerLambda has Kinesis stream read failures, which can indicate problems with the function processing or with the stream itself."
+      TreatMissingData: notBreaching        
+      AlarmActions:
+        - !Ref AlarmSNSTopicArn
+      OKActions:
+        - !Ref AlarmSNSTopicArn
+      Dimensions:
+        - Value: !Ref SafeStorageListenerLambda
+          Name: FunctionName
+        - Value: !Ref SafeStorageEventKinesisStreamName
+          Name: StreamName
+      DatapointsToAlarm: 1           
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      EvaluationPeriods: 6
+      Period: 600
+      Namespace: ESM/Kinesis   
+      MetricName: ProcessingFailures
+      Statistic: Maximum
+      Threshold: 1
 
   # # CDC to SLA Violation Checker
   SafeStorageListenerLambdaKinesisSourceMapping:
@@ -341,10 +370,35 @@ Resources:
       FunctionResponseTypes:
         - ReportBatchItemFailures
       MaximumBatchingWindowInSeconds: 300 # 1 minute
+      MaximumRecordAgeInSeconds: !Ref SafeStorageListenerLambdaKinesisMaximumRecordAgeInSeconds
       StartingPosition: TRIM_HORIZON
       DestinationConfig:
         OnFailure:
-          Destination: !Ref SafeStorageListenerDLQARN
+          Destination: !Sub arn:${AWS::Partition}:s3:::pn-esm-kinesis-failure-notifications-${AWS::Region}-${AWS::AccountId}
+
+  SafeStorageListenerLambdaKinesisSourceMappingAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${ProjectName}-SafeStorageListenerKinesis-ESM-Alarm"
+      AlarmDescription: "CloudWatch alarm for when SafeStorageListenerLambda has CDC Kinesis stream read failures, which can indicate problems with the function processing or with the stream itself."
+      TreatMissingData: notBreaching        
+      AlarmActions:
+        - !Ref AlarmSNSTopicArn
+      OKActions:
+        - !Ref AlarmSNSTopicArn
+      Dimensions:
+        - Value: !Ref SafeStorageListenerLambda
+          Name: FunctionName
+        - Value: !Ref CdcLegalConservationKinesisSourceStreamName
+          Name: StreamName
+      DatapointsToAlarm: 1           
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      EvaluationPeriods: 6
+      Period: 600
+      Namespace: ESM/Kinesis
+      MetricName: ProcessingFailures
+      Statistic: Maximum
+      Threshold: 1
 
   # Eliminare allarmi una volta che inseriamo allarme su Iterator Age del Kinesis Stream
   SafeStorageListenerLambdaAlarms:
@@ -525,7 +579,7 @@ Resources:
               - kms:GenerateDataKey*
               - kms:Describe*
             Effect: Allow
-            Resource: !Ref LegalConservationUpdateKinesisStreamKeyArn               
+            Resource: !Ref LegalConservationUpdateKinesisStreamKeyArn 
 
   # # Lambda access right
   EventUpdateReceiverLambdaPermission:
@@ -630,16 +684,7 @@ Resources:
             Effect: Allow
             Resource: 
               - !Ref LegalConservationRequestDynamoTableArn
-              - !Ref LegalConservationRequestHistoryDynamoTableArn  
-          - Sid: SQSmessage
-            Action:
-            - sqs:ReceiveMessage
-            - sqs:DeleteMessage
-            - sqs:GetQueueAttributes
-            - sqs:SendMessage
-            Effect: Allow
-            Resource:
-              - !Ref LegalConservationTrackerDLQARN            
+              - !Ref LegalConservationRequestHistoryDynamoTableArn         
           - Sid: Encrypt
             Action:
             - kms:Encrypt*
@@ -648,7 +693,16 @@ Resources:
             - kms:GenerateDataKey*
             - kms:Describe*
             Effect: Allow
-            Resource: !Ref LegalConservationUpdateKinesisStreamKeyArn               
+            Resource: !Ref LegalConservationUpdateKinesisStreamKeyArn
+          - Effect: Allow
+            Action:
+              - s3:ListBucket
+              - s3:GetBucketLocation
+            Resource: !Sub arn:${AWS::Partition}:s3:::pn-esm-kinesis-failure-notifications-${AWS::Region}-${AWS::AccountId}
+          - Effect: Allow
+            Action:
+              - s3:PutObject
+            Resource: !Sub arn:${AWS::Partition}:s3:::pn-esm-kinesis-failure-notifications-${AWS::Region}-${AWS::AccountId}/*         
 
   # # Lambda access right
   LegalConservationTrackerLambdaPermission:
@@ -661,6 +715,8 @@ Resources:
 
   LegalConservationTrackerEventSourceMapping:
     Type: AWS::Lambda::EventSourceMapping
+    DependsOn:
+      - LegalConservationTrackerRolePolicy
     Condition: IsCNEnabled  
     Properties:
       BatchSize: 20
@@ -669,12 +725,38 @@ Resources:
       FunctionName: !GetAtt LegalConservationTrackerLambda.Arn
       FunctionResponseTypes:
         - ReportBatchItemFailures
-      MaximumBatchingWindowInSeconds: 300 # 1 minute
+      MaximumBatchingWindowInSeconds: 300 # 5 minute
+      MaximumRecordAgeInSeconds: !Ref LegalConservationUpdateKinesisMaximumRecordAgeInSeconds
       StartingPosition: TRIM_HORIZON
       MaximumRetryAttempts: 10
       DestinationConfig:
         OnFailure:
-          Destination: !Ref LegalConservationTrackerDLQARN
+          Destination: !Sub arn:${AWS::Partition}:s3:::pn-esm-kinesis-failure-notifications-${AWS::Region}-${AWS::AccountId}
+
+  #Alarm for LegalConservationTrackerEventSourceMapping failures, which can indicate problems with the function processing or with the stream itself.
+  LegalConservationTrackerEventSourceMappingAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${ProjectName}-LegalConservationTracker-ESM-Alarm"
+      AlarmDescription: "CloudWatch alarm for when LegalConservationTrackerLambda has Kinesis stream read failures, which can indicate problems with the function processing or with the stream itself."
+      TreatMissingData: notBreaching        
+      AlarmActions:
+        - !Ref AlarmSNSTopicArn
+      OKActions:
+        - !Ref AlarmSNSTopicArn
+      Dimensions:
+        - Value: !Ref LegalConservationTrackerLambda
+          Name: FunctionName
+        - Value: !Ref LegalConservationUpdateKinesisStreamName
+          Name: StreamName
+      DatapointsToAlarm: 1           
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      EvaluationPeriods: 6
+      Period: 600
+      Namespace: ESM/Kinesis 
+      MetricName: ProcessingFailures
+      Statistic: Maximum
+      Threshold: 1 
 
   # Allow event bus rules to write to kinesis stream
   EventBusEnqueueRole:
@@ -766,6 +848,27 @@ Resources:
       Statistic: Maximum
       Threshold: !Ref SafeStorageEventKinesisMaxAgeInMilliseconds
 
+  # LegalConservationUpdate Kinesis GetRecords.IteratorAgeMilliseconds alarm
+  LegalConservationUpdateKinesisGetRecordsIteratorAgeAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${ProjectName}-LegalConservationUpdateCNKinesis-IteratorAge-Alarm"
+      AlarmDescription: "CloudWatch alarm for when Kinesis LegalConservationUpdate GetRecords.IteratorAgeMilliseconds is too high."
+      TreatMissingData: notBreaching        
+      AlarmActions:
+        - !Ref AlarmSNSTopicArn
+      Dimensions:
+        - Value: !Ref LegalConservationUpdateKinesisStreamName
+          Name: StreamName
+      DatapointsToAlarm: 10           
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      EvaluationPeriods: 60
+      Period: 60
+      Namespace: AWS/Kinesis   
+      MetricName: GetRecords.IteratorAgeMilliseconds
+      Statistic: Maximum
+      Threshold: !Ref LegalConservationUpdateKinesisMaxAgeInMilliseconds
+
   # Dashboard
   MicroserviceDashboard:
     Type: AWS::CloudFormation::Stack
@@ -785,10 +888,9 @@ Resources:
         AlarmArns: !Join
           - ","
           - - !GetAtt SafeStorageListenerLambdaAlarms.Outputs.LambdaInvocationErrorLogsMetricAlarm
-            - !Ref LegalConservationTrackerDLQAlarmARN
-            - !Ref SafeStorageListenerDLQAlarmARN
             - !GetAtt CdcKinesisGetRecordsIteratorAgeAlarm.Arn
             - !GetAtt SafeStorageKinesisGetRecordsIteratorAgeAlarm.Arn
+            - !GetAtt LegalConservationUpdateKinesisGetRecordsIteratorAgeAlarm.Arn
         LogGroupsNames: !Join
           - ","
           - - !Sub /aws/lambda/${PreSignedUrlGeneratorLambda}
