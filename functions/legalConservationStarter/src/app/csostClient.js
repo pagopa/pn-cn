@@ -19,7 +19,7 @@ async function internalIngestDocument(url, fetchOptions){
     }
     return data
   } catch (error) {
-    console.error('[DOWNSTREAM] Service CSost Ingestion returned errors', {
+    console.warn('[DOWNSTREAM] Service CSost Ingestion returned errors', {
       error: error.message,
       req: fetchOptions,
       url: url
