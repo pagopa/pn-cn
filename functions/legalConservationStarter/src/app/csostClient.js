@@ -2,21 +2,30 @@ const { retryHandler } = require('legal-conservation-commons')
 
 // HTTP client for CSOST service (the legal conservation service)
 async function internalIngestDocument(url, fetchOptions){
-  const res = await fetch(url, fetchOptions);
-    
-  const data = await res.json()   
-  if (res.ok) {
-    console.log('INGESTION_OK', {
-      res: data,
-      req: fetchOptions
+  try {
+    const res = await fetch(url, fetchOptions);
+
+    const data = await res.json()
+    if (res.ok) {
+      console.log('INGESTION_OK', {
+        res: data,
+        req: fetchOptions
+      })
+    } else {
+      console.warn('[DOWNSTREAM] Service CSost Ingestion returned errors', {
+        res: data,
+        req: fetchOptions
+      })
+    }
+    return data
+  } catch (error) {
+    console.error('[DOWNSTREAM] Service CSost Ingestion returned errors', {
+      error: error.message,
+      req: fetchOptions,
+      url: url
     })
-  } else {
-    console.warn('[DOWNSTREAM] Service CSost Ingestion returned errors', {
-      res: data,
-      req: fetchOptions
-    })
+    throw error
   }
-  return data
 }
 
 // reuse retryHandler to do internalIngestDocument calls (3 retryes with 1000ms delay)

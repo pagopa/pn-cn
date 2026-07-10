@@ -24,5 +24,31 @@ describe('Csost Client Testing', () => {
             expect(res.status).to.be.not.undefined;
             expect(res.status).to.be.equal(400)
         });
+        it('Retries and throws when fetch raises an exception', async () => {
+            const originalFetch = global.fetch;
+            const originalSetTimeout = global.setTimeout;
+            const expectedError = new Error('network error');
+            let attempts = 0;
+
+            global.fetch = async () => {
+                attempts += 1;
+                throw expectedError;
+            };
+            global.setTimeout = (callback) => {
+                callback();
+                return 0;
+            };
+
+            try {
+                await ingestDocument(payloadRequest, {apiKey : "secretApiKey"});
+                expect.fail('Expected ingestDocument to throw');
+            } catch (error) {
+                expect(error).to.equal(expectedError);
+                expect(attempts).to.be.equal(4);
+            } finally {
+                global.fetch = originalFetch;
+                global.setTimeout = originalSetTimeout;
+            }
+        });
     });
 });

@@ -179,6 +179,11 @@ Parameters:
     Type: Number
     Default: 604800 # 7 days
 
+  NodeVersion:
+    Type: String
+    Default: "nodejs24.x"
+  
+
 Conditions:
   IsCNEnabled: !Equals [ !Ref LegalConservationEnabled, 'true' ]
   
@@ -198,7 +203,7 @@ Resources:
     Type: AWS::Lambda::Function
     Properties:
       FunctionName: !Ref SafeStorageListenerLambdaName
-      Runtime: nodejs22.x
+      Runtime: !Ref NodeVersion
       Handler: "index.handler"
       ReservedConcurrentExecutions: !Ref SafeStorageListenerReservedConcurrency
       Code:
@@ -425,7 +430,7 @@ Resources:
     Type: AWS::Lambda::Function
     Properties:
       FunctionName: !Ref PreSignedUrlGeneratorLambdaName
-      Runtime: nodejs22.x
+      Runtime: !Ref NodeVersion
       Handler: "index.handler"
       Code:
         S3Bucket: !Ref LambdasBucketName
@@ -503,7 +508,7 @@ Resources:
     Type: AWS::Lambda::Function
     Properties:
       FunctionName: !Ref EventUpdateReceiverLambdaName
-      Runtime: nodejs22.x
+      Runtime: !Ref NodeVersion
       Handler: "index.handler"
       Code:
         S3Bucket: !Ref LambdasBucketName
@@ -599,7 +604,7 @@ Resources:
     Type: AWS::Lambda::Function
     Properties:
       FunctionName: !Ref LegalConservationTrackerLambdaName
-      Runtime: nodejs22.x
+      Runtime: !Ref NodeVersion
       Handler: "index.handler"
       Code:
         S3Bucket: !Ref LambdasBucketName
