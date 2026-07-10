@@ -8,20 +8,17 @@ async function internalIngestDocument(url, fetchOptions){
     const data = await res.json()
     if (res.ok) {
       console.log('INGESTION_OK', {
-        res: data,
-        req: fetchOptions
+        res: data
       })
     } else {
       console.warn('[DOWNSTREAM] Service CSost Ingestion returned errors', {
-        res: data,
-        req: fetchOptions
+        res: data
       })
     }
     return data
   } catch (error) {
     console.warn('[DOWNSTREAM] Service CSost Ingestion returned errors', {
       error: error.message,
-      req: fetchOptions,
       url: url
     })
     throw error
