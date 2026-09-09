@@ -1,5 +1,9 @@
 const { retryHandler } = require('./retryHandler')
+const { logDownstreamCall, instrumentDownstreamCall, resolveOutcome } = require('./downstreamCallLogger')
 
 module.exports = {
-    retryHandler
+    retryHandler,
+    logDownstreamCall,
+    instrumentDownstreamCall,
+    resolveOutcome
 }

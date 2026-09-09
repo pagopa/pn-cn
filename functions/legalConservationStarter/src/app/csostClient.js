@@ -1,9 +1,12 @@
-const { retryHandler } = require('legal-conservation-commons')
+const { retryHandler, instrumentDownstreamCall } = require('legal-conservation-commons')
+
+const CLIENT_NAME = 'CsostClient'
 
 // HTTP client for CSOST service (the legal conservation service)
 async function internalIngestDocument(url, fetchOptions){
   try {
-    const res = await fetch(url, fetchOptions);
+    // logs a "downstream_http_call" event, mirroring pn-commons' DownstreamCallLoggingFilter
+    const res = await instrumentDownstreamCall(CLIENT_NAME, fetchOptions.method, url, () => fetch(url, fetchOptions));
 
     const data = await res.json()
     if (res.ok) {
