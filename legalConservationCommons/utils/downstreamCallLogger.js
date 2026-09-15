@@ -44,8 +44,9 @@ const logDownstreamCall = ({ clientName, method, url, host, status, success, out
 // logging the outcome. On error the original error is rethrown untouched.
 const instrumentDownstreamCall = async (clientName, method, url, invokeFetch) => {
     const startNano = process.hrtime.bigint()
-    const host = new URL(url).host
+    let host = null
     try {
+        host = new URL(url).host
         const response = await invokeFetch()
         const durationMs = Number((process.hrtime.bigint() - startNano) / 1000000n)
         const status = response.status
@@ -63,8 +64,8 @@ const instrumentDownstreamCall = async (clientName, method, url, invokeFetch) =>
             success: false,
             outcome: 'ERROR',
             durationMs,
-            errorType: error.constructor.name,
-            errorMessage: error.message || 'unknown'
+            errorType: error?.constructor?.name || typeof error,
+            errorMessage: error?.message || String(error ?? 'unknown')
         })
         throw error
     }

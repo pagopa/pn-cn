@@ -216,6 +216,8 @@ Resources:
         SubnetIds: !Ref VpcEgressSubnetsIds       
       TracingConfig:
         Mode: Active
+      LoggingConfig:
+        LogFormat: JSON
       Layers:
         - "arn:aws:lambda:eu-south-1:325218067255:layer:AWS-Parameters-and-Secrets-Lambda-Extension:17" 
       Environment:
@@ -447,6 +449,8 @@ Resources:
         SubnetIds: !Ref SubnetsIds          
       TracingConfig:
         Mode: Active
+      LoggingConfig:
+        LogFormat: JSON
       Timeout: 10
       Tags:
         - Key: "pn-eni-related"
@@ -524,6 +528,8 @@ Resources:
           RETRY_ERROR_CODES: !Ref RetryErrorCodes
       TracingConfig:
         Mode: Active
+      LoggingConfig:
+        LogFormat: JSON
       Timeout: 10
 
   # # Lambda function role
@@ -627,6 +633,8 @@ Resources:
         SubnetIds: !Ref SubnetsIds 
       TracingConfig:
         Mode: Active
+      LoggingConfig:
+        LogFormat: JSON
       Timeout: 180
       
 
