@@ -1,6 +1,6 @@
 const { retryHandler, instrumentDownstreamCall } = require('legal-conservation-commons')
 
-const CLIENT_NAME = 'CsostClient'
+const CLIENT_NAME = 'KONECTA-LEGAL-CONSERVATION'
 
 // HTTP client for CSOST service (the legal conservation service)
 async function internalIngestDocument(url, fetchOptions){
