@@ -66,6 +66,15 @@ Parameters:
   LogsKinesisSourceStreamArn:
     Type: String
     Description: 'Where to send Logs'
+  
+
+  EnableDownstreamSubscriptionFilter:
+    Type: String
+    Default: false
+    Description: Enable downstream subscription filter
+    AllowedValues:
+      - true
+      - false
     
 Conditions:
   CdcLegalConservationOnDemandDisabled: !Not [!Equals [!Ref CdcLegalConservationStreamMode, ON_DEMAND]]
@@ -303,6 +312,7 @@ Resources:
         LogGroupRetention: !Ref LogRetention
         LogGroupPrefix: '/aws/lambda'
         LogsKinesisSourceStreamArn: !Ref LogsKinesisSourceStreamArn
+        LogEnableDownstreamSubscriptionFilter: !Ref EnableDownstreamSubscriptionFilter
 
   PreSignedUrlGeneratorLambdaLogGroup:
     Type: AWS::CloudFormation::Stack
